@@ -1,6 +1,6 @@
 ---
 title: "main"
-author: "keyler sanchez"
+author: "Keyler Sanchez - Greyler Chacon - Samuel Traslaviña "
 date: "2024-11-20"
 output: html_document
 ---
@@ -26,6 +26,15 @@ head(data)
 ```{r}
 colSums(is.na(data))
 ```
+## Tipos de datos
+```{r}
+sapply(data,typeof)
+```
+## Limpieza de datos 
+```{r}
+
+```
+
 ## Including Plots
 
 
