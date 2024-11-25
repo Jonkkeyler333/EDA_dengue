@@ -16,6 +16,7 @@ El dengue es una enfermedad propagada por mosquitos que supone un riesgo para la
 Específicamente se obtienen los datos del sistema de monitoreo epidemiológico de Salud y Protección Social para estudiar diversos aspectos del fenómeno, como los síntomas manifestados por los pacientes afectados y las características demográficas de los grupos de riesgo.
 
 Este estudio busca abordar interrogantes fundamentales sobre los perfiles de riesgo asociados al dengue en sus distintas variantes sintomatológicas, además de proponer una segmentación de pacientes para direccionar estrategias preventivas y de cuidado de la salud.
+### Metodologia
 
 ## Paquetes de R usados
 ```{r}
