@@ -1,5 +1,5 @@
 ---
-title: "main"
+title: "´Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio .."
 author: "Keyler Sanchez - Greyler Chacon - Samuel Traslaviña "
 date: "2024-11-20"
 output: html_document
@@ -11,13 +11,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Introducción
-El dengue es una enfermedad viral aguda causada por el virus del dengue (*DENV*), que se transmite a los seres humanos a través de la picadura de mosquitos hembra infectados (*Aedes aegypti*).Esta enfermedad se ha convertido a finales del siglo *XX* y a lo largo del siglo *XXI* en un problema de salud pública en muchas regiones tropicales y subtropicales del mundo. El mayor número de casos de dengue se registró en 2023, con la notificación de 6,5 millones de casos y más de 7 300 muertes relacionadas con la enfermedad, afectando a más de 80 países de todas las regiones de la OMS[@INS2024].Los diferentes factores demograficos , en el entorno y sociales influyen en la propagación de la enfermedad,por ejemplo , el cambio climatico(por ejemplo *El Niño* en 2023) ha incrementado el patrón y frecuencia de precipitaciones en las regiones de america latina , asi como el aumento de la temperatura , lo que ha permitido la proliferación de los mosquitos que transmiten la enfermedad.
+El dengue es una enfermedad viral aguda causada por el virus del dengue (*DENV*), que se transmite a los seres humanos a través de la picadura de mosquitos hembra infectados (*Aedes aegypti*). Esta enfermedad se ha convertido a finales del siglo *XX* y a lo largo del siglo *XXI* en un problema de salud pública en muchas regiones tropicales y subtropicales del mundo. El mayor número de casos de dengue se registró en 2023, con la notificación de 6,5 millones de casos y más de 7 300 muertes relacionadas con la enfermedad, afectando a más de 80 países de todas las regiones de la OMS[@INS2024]. Los diferentes factores demográficos , en el entorno y sociales influyen en la propagación de la enfermedad, por ejemplo, el cambio climático(por ejemplo *El Niño* en 2023) ha incrementado el patrón y frecuencia de precipitaciones en las regiones de América Latina, así como el aumento de la temperatura, lo que ha permitido la proliferación de los mosquitos que transmiten la enfermedad.
 
-El dengue es una enfermedad propagada por mosquitos que supone un riesgo para la salud pública en lugares como Bucaramanga. Para este estudio se empleará un amplio conjunto de datos que incluye detalles sobre los casos de dengue común y grave, así como la mortalidad asociada a esta enfermedad. Estos datos están desagregados según variables como género, edad, ocupación y estado de afiliación al sistema de salud, entre otros aspectos sociales y de salud.
+En Colombia el dengue ha tenido una fluctuación en cuanto a los casos de dengue en los últimos años, pero, en 2023, inició una nueva fase epidémica de  dengue similar a lo observado en algunos  países de la región de Américas. Durante este año la incidencia en el país fue  de 387,2 casos por 100 000 habitantes  superior a la registrada en 2009, 2011,  2012, 2017, 2018, 2021 y 2022; y la  letalidad por dengue fue de 0,09 % inferior  a las metas establecidas por el gobierno local[@INS2024]. Por lo cual, en nuestro país el dengue se considera un problema de salud pública y se han implementado diferentes estrategias para la prevención y control de la enfermedad debido al potencial epidemiológico de la enfermedad, además, que en el país el vector transmisor de la enfermedad tiene presencia prácticamente todo el país.
+
+El dengue es una enfermedad  que supone un riesgo para la salud pública en lugares como Bucaramanga. Es necesario realizar un estudio a partir de los datos reportados a partir de las fichas de notificación individual para casos positivos de dengue suministrados (anonimizados) por el instituto nacional de salud para Bucaramanga, con el fin de identificar los perfiles de riesgo asociados a la enfermedad y obtener información relevante para la toma de decisiones en salud pública.
+
+Para este estudio se empleó un amplio conjunto de datos que incluye detalles sobre los casos de dengue común y grave, así como la mortalidad asociada a esta enfermedad. Estos datos están desagregados según variables como género, edad, ocupación y estado de afiliación al sistema de salud, entre otros aspectos sociales y de salud.
 
 Específicamente se obtienen los datos del sistema de monitoreo epidemiológico de Salud y Protección Social para estudiar diversos aspectos del fenómeno, como los síntomas manifestados por los pacientes afectados y las características demográficas de los grupos de riesgo.
-
-Este estudio busca abordar interrogantes fundamentales sobre los perfiles de riesgo asociados al dengue en sus distintas variantes sintomatológicas, además de proponer una segmentación de pacientes para direccionar estrategias preventivas y de cuidado de la salud.
 ### Metodologia
 
 ## Paquetes de R usados
