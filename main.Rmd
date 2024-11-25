@@ -1,8 +1,9 @@
 ---
-title: "´Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio .."
+title: "Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio .."
 author: "Keyler Sanchez - Greyler Chacon - Samuel Traslaviña "
 date: "2024-11-20"
 output: html_document
+lang: es
 bibliography: bibliografia.bib
 ---
 <style>body{text-align: justify;}</style>
@@ -20,6 +21,20 @@ El dengue es una enfermedad  que supone un riesgo para la salud pública en luga
 Para este estudio se empleó un amplio conjunto de datos que incluye detalles sobre los casos de dengue común y grave, así como la mortalidad asociada a esta enfermedad. Estos datos están desagregados según variables como género, edad, ocupación y estado de afiliación al sistema de salud, entre otros aspectos sociales y de salud.
 
 Específicamente se obtienen los datos del sistema de monitoreo epidemiológico de Salud y Protección Social para estudiar diversos aspectos del fenómeno, como los síntomas manifestados por los pacientes afectados y las características demográficas de los grupos de riesgo.
+
+### Objetivo de analisis
+El objetivo de este proyecto es analizar los datos de dengue en Bucaramanga para identificar los perfiles de riesgo asociados a la enfermedad mediante un enfoque no supervisado de aprendizaje automático y tecnicas de analisis de datos , logrando asi segmentar y describir a los pacientes en diferentes grupos según sus características, lo que permitirá identificar posibles focos de riesgo y realizar de una manera mas efectiva las campañas de prevención que se realizan.
+
+### Preguntas de investigación
+Para el proyecto se plantean las siguientes preguntas de investigación:
+
+1. ¿Cual es el perfil de las personas que presentaron dengue grave que fallecieron o sobrevivieron?.
+
+2. ¿Que sintomas se presentan con mayor predominancia en cada uno de los tipos de dengue (sin signos de alarma,con signos de alarma,grave).
+
+3. Generar grupos (*clusters*) de personas infectadas con el virus del dengue con fines de determinar perfiles e información util para generar campañas de prevención mas focalizadas.
+
+
 ### Metodologia
 
 ## Paquetes de R usados
