@@ -17,10 +17,13 @@ Específicamente se obtienen los datos del sistema de monitoreo epidemiológico 
 
 Este estudio busca abordar interrogantes fundamentales sobre los perfiles de riesgo asociados al dengue en sus distintas variantes sintomatológicas, además de proponer una segmentación de pacientes para direccionar estrategias preventivas y de cuidado de la salud.
 
-Este proyecto lleva a cabo un **Examen Exploratorio de Datos (EDA)** e involucra las siguientes etapas:
+## Paquetes de R usados
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+```
 
-### Procesamiento de información
-_Aqui toca poner tdo lo de la limpieza de datos y eso_
 
 ### Visualización
 Para poder identificar patrones y relaciones entre las variables de forma más sencilla para el lector, se utilizarán gráficos como histogramas, diagramas de caja (boxplots) y diagramas de dispersión, facilitando la interpretación visual de los datos.
@@ -45,9 +48,7 @@ Los resultados de este análisis serán útiles para varios grupos involucrados 
 
 ## Librerias necesarias
 ```{r}
-library(ggplot2)
-library(dplyr)
-library(tidyverse)
+
 ```
 
 ## Cargando los datos
