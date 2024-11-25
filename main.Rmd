@@ -5,14 +5,13 @@ date: "2024-11-20"
 output: html_document
 bibliography: bibliografia.bib
 ---
-
+<style>body{text-align: justify;}</style>
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Introducción
-El dengue es una enfermedad viral aguda causada por el virus del dengue (*DENV*), que se transmite a los seres humanos a través de la picadura de mosquitos hembra infectados (*Aedes aegypti*).Esta enfermedad se ha convertido a finales del siglo *XX* y a lo largo del siglo *XXI* en un problema de salud pública en muchas regiones tropicales y subtropicales del mundo. El mayor número de casos de dengue se registró en 2023, con la notificación de 6,5 millones de casos y más de 7 300 muertes relacionadas con la enfermedad, afectando a más de 80 países de todas las regiones de la OMS[@INS2024].
-
+El dengue es una enfermedad viral aguda causada por el virus del dengue (*DENV*), que se transmite a los seres humanos a través de la picadura de mosquitos hembra infectados (*Aedes aegypti*).Esta enfermedad se ha convertido a finales del siglo *XX* y a lo largo del siglo *XXI* en un problema de salud pública en muchas regiones tropicales y subtropicales del mundo. El mayor número de casos de dengue se registró en 2023, con la notificación de 6,5 millones de casos y más de 7 300 muertes relacionadas con la enfermedad, afectando a más de 80 países de todas las regiones de la OMS[@INS2024].Los diferentes factores demograficos , en el entorno y sociales influyen en la propagación de la enfermedad,por ejemplo , el cambio climatico(por ejemplo *El Niño* en 2023) ha incrementado el patrón y frecuencia de precipitaciones en las regiones de america latina , asi como el aumento de la temperatura , lo que ha permitido la proliferación de los mosquitos que transmiten la enfermedad.
 
 El dengue es una enfermedad propagada por mosquitos que supone un riesgo para la salud pública en lugares como Bucaramanga. Para este estudio se empleará un amplio conjunto de datos que incluye detalles sobre los casos de dengue común y grave, así como la mortalidad asociada a esta enfermedad. Estos datos están desagregados según variables como género, edad, ocupación y estado de afiliación al sistema de salud, entre otros aspectos sociales y de salud.
 
