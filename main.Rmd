@@ -38,42 +38,50 @@ Para el proyecto se plantean las siguientes preguntas de investigación:
 ## Metodologia
 
 ### Paquetes de R usados
-```{r}
+```{r message=FALSE, warning=FALSE}
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
 ```
 
-
-
-## Librerias necesarias
-```{r}
-
-```
-
-## Cargando los datos
+### Cargando los datos
+Los datos que se emplearán en el proyecto corresponde a casos de dengue reportados oficialmente mediante fichas de notificación individual (los registros se encuentran de manera anonima sin ningun tipo de indentificación),no se encuentran directamente dispuestos para usar en el entorno de R,los datos obtenidos en el portal web de datos.gov [acceso al conjunto de datos originales](https://www.datos.gov.co/Salud-y-Protecci-n-Social/Dengue-Dengue-grave-y-mortalidad-por-dengue-munici/qzc7-jbg3/about_data), portal en el cual se alojan gran cantidad de conjuntos de datos e información abierta para los Colombianos con fines de transparencia y acceso a la información. Para cargar los datos se emplea la función `read_csv` del paquete `readr` que permite leer archivos csv de forma rápida y eficiente para luego ser procesados en un dataframe.
 ```{r}
 data<-read_csv('data/data_dengue.csv',show_col_types=FALSE)
 head(data)
 ```
-## Limpiando los datos
-### Valores faltantes
+Es necesario realizar la aclaración que cada registro corresponde a un caso positivo de dengue de una persona en la ciudad de bucaramanga con datos hasta el 12 de diciembre de 2023.
+```{r}
+dim(data)
+```
+El conjunto de datos que se cargó , consta de 10159 observaciones y un total de 78 columnas o features.
+
+### Limpiando los datos
+El proceso de limpieza de datos consiste en identificar y corregir los errores y anomalías en los datos, como valores faltantes, valores atípicos y datos duplicados, para garantizar que los datos sean precisos y confiables para el análisis.
+#### Valores faltantes
+Luego de cargar los datos , se debe revisar que cada *feature* (columna del conjunto de datos) no cuente con valores faltantes o *missing values*.
 ```{r}
 colSums(is.na(data))
 ```
-## Tipos de datos
+Se obtuvo que ninguna columna cuenta con valores faltantes por lo cual no se ahonda mas en esta sección.
+### Tipos de datos
+Es necesario revisar los tipos de datos de cada columna para asegurarse que sean los adecuados para realizar cálculos , gráficos y analisis. De aquí se determinan que *features* son categóricas y cuáles son numéricas, ya que las categóricas deben recibir un tratamiento especial como lo será la codificación de las mismas.
 ```{r}
 sapply(data,typeof)
 ```
+Antes de realizar la distinción de datos categóricos y numéricos,se eliminan algunas columnas que no aportan información relevante para el análisis.
+```{r}
+df<-select(data,-c('orden','cod_eve','grupo','cod_pais_r','version','muesttejid','mueshigado','muesbazo','muesriñon','muesmedula','muesmiocar','muescerebr','muespulmon','nom_eve'))
+dim(df)
+```
+Depues de eliminar las columnas que no aportan información relevante para el análisis, se obtiene un total de 64 columnas.
+
 ## Limpieza de datos 
 ```{r}
 
 ```
 
 ## Including Plots
-
-
-
 ```{r pressure, echo=FALSE}
 plot(pressure)
 ```
