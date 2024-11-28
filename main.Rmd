@@ -61,9 +61,15 @@ El proceso de limpieza de datos consiste en identificar y corregir los errores y
 #### Valores faltantes
 Luego de cargar los datos , se debe revisar que cada *feature* (columna del conjunto de datos) no cuente con valores faltantes o *missing values*.
 ```{r}
-colSums(is.na(data))
+missing_data=sort(colSums(is.na(data)),decreasing=TRUE)
+ggplot()+geom_bar(aes(x=names(head(missing_data,20)),y=head(missing_data,20)),stat="identity",fill='blue')+theme(axis.text.x=element_text(angle=45,hjust=1))+labs(title='Valores faltantes',x='features',y='# de valores faltantes')
 ```
-Se obtuvo que ninguna columna cuenta con valores faltantes por lo cual no se ahonda mas en esta sección.
+Se obtuvo que la caracteristica llamada *ocupacion* , esta columna representa el codigo de clasificación de actividad comercial , por lo cual , despues de revisar el estandar para dicho codigo , se determino llenar esos valores faltantes con el valor de 1.
+```{r}
+data<-data %>% replace_na(list(ocupacion_=1))
+print(sort(colSums(is.na(data)),decreasing=TRUE))
+```
+
 ### Tipos de datos
 Es necesario revisar los tipos de datos de cada columna para asegurarse que sean los adecuados para realizar cálculos , gráficos y analisis. De aquí se determinan que *features* son categóricas y cuáles son numéricas, ya que las categóricas deben recibir un tratamiento especial como lo será la codificación de las mismas.
 ```{r}
