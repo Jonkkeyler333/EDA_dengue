@@ -6,98 +6,124 @@ output: html_document
 lang: es
 bibliography: bibliografia.bib
 ---
+
+```{=html}
 <style>body{text-align: justify;}</style>
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Introducción
+
 El dengue es una enfermedad viral aguda causada por el virus del dengue (*DENV*), que se transmite a los seres humanos a través de la picadura de mosquitos hembra infectados (*Aedes aegypti*). Esta enfermedad se ha convertido a finales del siglo *XX* y a lo largo del siglo *XXI* en un problema de salud pública en muchas regiones tropicales y subtropicales del mundo. El mayor número de casos de dengue se registró en 2023, con la notificación de 6,5 millones de casos y más de 7 300 muertes relacionadas con la enfermedad, afectando a más de 80 países de todas las regiones de la OMS[@INS2024]. Los diferentes factores demográficos , en el entorno y sociales influyen en la propagación de la enfermedad, por ejemplo, el cambio climático(por ejemplo *El Niño* en 2023) ha incrementado el patrón y frecuencia de precipitaciones en las regiones de América Latina, así como el aumento de la temperatura, lo que ha permitido la proliferación de los mosquitos que transmiten la enfermedad.
 
-En Colombia el dengue ha tenido una fluctuación en cuanto a los casos de dengue en los últimos años, pero, en 2023, inició una nueva fase epidémica de  dengue similar a lo observado en algunos  países de la región de Américas. Durante este año la incidencia en el país fue  de 387,2 casos por 100 000 habitantes  superior a la registrada en 2009, 2011,  2012, 2017, 2018, 2021 y 2022; y la  letalidad por dengue fue de 0,09 % inferior  a las metas establecidas por el gobierno local[@INS2024]. Por lo cual, en nuestro país el dengue se considera un problema de salud pública y se han implementado diferentes estrategias para la prevención y control de la enfermedad debido al potencial epidemiológico de la enfermedad, además, que en el país el vector transmisor de la enfermedad tiene presencia prácticamente todo el país.
+En Colombia el dengue ha tenido una fluctuación en cuanto a los casos de dengue en los últimos años, pero, en 2023, inició una nueva fase epidémica de dengue similar a lo observado en algunos países de la región de Américas. Durante este año la incidencia en el país fue de 387,2 casos por 100 000 habitantes superior a la registrada en 2009, 2011, 2012, 2017, 2018, 2021 y 2022; y la letalidad por dengue fue de 0,09 % inferior a las metas establecidas por el gobierno local[@INS2024]. Por lo cual, en nuestro país el dengue se considera un problema de salud pública y se han implementado diferentes estrategias para la prevención y control de la enfermedad debido al potencial epidemiológico de la enfermedad, además, que en el país el vector transmisor de la enfermedad tiene presencia prácticamente todo el país.
 
-El dengue es una enfermedad  que supone un riesgo para la salud pública en lugares como Bucaramanga. Es necesario realizar un estudio a partir de los datos reportados a partir de las fichas de notificación individual para casos positivos de dengue suministrados (anonimizados) por el instituto nacional de salud para Bucaramanga, con el fin de identificar los perfiles de riesgo asociados a la enfermedad y obtener información relevante para la toma de decisiones en salud pública.
+El dengue es una enfermedad que supone un riesgo para la salud pública en lugares como Bucaramanga. Es necesario realizar un estudio a partir de los datos reportados a partir de las fichas de notificación individual para casos positivos de dengue suministrados (anonimizados) por el instituto nacional de salud para Bucaramanga, con el fin de identificar los perfiles de riesgo asociados a la enfermedad y obtener información relevante para la toma de decisiones en salud pública.
 
 Para este estudio se empleó un amplio conjunto de datos que incluye detalles sobre los casos de dengue común y grave, así como la mortalidad asociada a esta enfermedad. Estos datos están desagregados según variables como género, edad, ocupación y estado de afiliación al sistema de salud, entre otros aspectos sociales y de salud.
 
 Específicamente se obtienen los datos del sistema de monitoreo epidemiológico de Salud y Protección Social para estudiar diversos aspectos del fenómeno, como los síntomas manifestados por los pacientes afectados y las características demográficas de los grupos de riesgo.
 
 ### Objetivo de analisis
+
 El objetivo de este proyecto es analizar los datos de dengue en Bucaramanga para identificar los perfiles de riesgo asociados a la enfermedad mediante un enfoque no supervisado de aprendizaje automático y tecnicas de analisis de datos , logrando asi segmentar y describir a los pacientes en diferentes grupos según sus características, lo que permitirá identificar posibles focos de riesgo y realizar de una manera mas efectiva las campañas de prevención que se realizan.
 
 ### Preguntas de investigación
+
 Para el proyecto se plantean las siguientes preguntas de investigación:
 
-1. ¿Cual es el perfil de las personas que presentaron dengue grave que fallecieron o sobrevivieron?.
+1.  ¿Cual es el perfil de las personas que presentaron dengue grave que fallecieron o sobrevivieron?.
 
-2. ¿Que sintomas se presentan con mayor predominancia en cada uno de los tipos de dengue (sin signos de alarma,con signos de alarma,grave).
+2.  ¿Que sintomas se presentan con mayor predominancia en cada uno de los tipos de dengue (sin signos de alarma,con signos de alarma,grave).
 
-3. Generar grupos (*clusters*) de personas infectadas con el virus del dengue con fines de determinar perfiles e información util para generar campañas de prevención mas focalizadas.
-
+3.  Generar grupos (*clusters*) de personas infectadas con el virus del dengue con fines de determinar perfiles e información util para generar campañas de prevención mas focalizadas.
 
 ## Metodologia
 
 ### Paquetes de R usados
+
 ```{r message=FALSE, warning=FALSE}
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
 library(lubridate)
+library(superml)
+standard_scaler<-function(x){
+  return x
+}
 ```
 
 ### Cargando los datos
+
 Los datos que se emplearán en el proyecto corresponde a casos de dengue reportados oficialmente mediante fichas de notificación individual (los registros se encuentran de manera anonima sin ningun tipo de indentificación),no se encuentran directamente dispuestos para usar en el entorno de R,los datos obtenidos en el portal web de datos.gov [acceso al conjunto de datos originales](https://www.datos.gov.co/Salud-y-Protecci-n-Social/Dengue-Dengue-grave-y-mortalidad-por-dengue-munici/qzc7-jbg3/about_data), portal en el cual se alojan gran cantidad de conjuntos de datos e información abierta para los Colombianos con fines de transparencia y acceso a la información. Para cargar los datos se emplea la función `read_csv` del paquete `readr` que permite leer archivos csv de forma rápida y eficiente para luego ser procesados en un dataframe.
+
 ```{r}
 data<-read_csv('data/data_dengue.csv',show_col_types=FALSE)
 head(data)
 ```
+
 Es necesario realizar la aclaración que cada registro corresponde a un caso positivo de dengue de una persona en la ciudad de bucaramanga con datos hasta el 12 de diciembre de 2023.
+
 ```{r}
 dim(data)
 ```
+
 El conjunto de datos que se cargó , consta de 10159 observaciones y un total de 78 columnas o features.
 
 ### Limpiando los datos
-El proceso de limpieza de datos consiste en identificar y corregir los errores y anomalías en los datos, como valores faltantes, valores atípicos y datos duplicados, para garantizar que los datos sean precisos y confiables para el análisis.
-#### Valores faltantes
-Luego de cargar los datos , se debe revisar que cada *feature* (columna del conjunto de datos) no cuente con valores faltantes o *missing values*.
+
+El proceso de limpieza de datos consiste en identificar y corregir los errores y anomalías en los datos, como valores faltantes, valores atípicos y datos duplicados, para garantizar que los datos sean precisos y confiables para el análisis. \#### Valores faltantes Luego de cargar los datos , se debe revisar que cada *feature* (columna del conjunto de datos) no cuente con valores faltantes o *missing values*.
+
 ```{r}
 missing_data=sort(colSums(is.na(data)),decreasing=TRUE)
 ggplot()+geom_bar(aes(x=names(head(missing_data,20)),y=head(missing_data,20)),stat="identity",fill='blue')+theme(axis.text.x=element_text(angle=45,hjust=1))+labs(title='Valores faltantes',x='features',y='# de valores faltantes')
 ```
+
 Se obtuvo que la caracteristica llamada *ocupacion* , esta columna representa el codigo de clasificación de actividad comercial , por lo cual , despues de revisar el estandar para dicho codigo , se determino llenar esos valores faltantes con el valor de 1.
+
 ```{r}
 data<-data %>% replace_na(list(ocupacion_=1))
 print(sort(colSums(is.na(data)),decreasing=TRUE))
 ```
 
 ### Tipos de datos
+
 Es necesario revisar los tipos de datos de cada columna para asegurarse que sean los adecuados para realizar cálculos , gráficos y analisis. De aquí se determinan que *features* son categóricas y cuáles son numéricas, ya que las categóricas deben recibir un tratamiento especial como lo será la codificación de las mismas.
+
 ```{r}
 sapply(data,typeof)
 ```
+
 Antes de realizar la distinción de datos categóricos y numéricos,se eliminan algunas columnas que no aportan información relevante para el análisis.
+
 ```{r}
-df<-select(data,-c('orden','cod_eve','grupo','cod_pais_r','version','muesttejid','mueshigado','muesbazo','muesriñon','muesmedula','muesmiocar','muescerebr','muespulmon','nom_eve','cod_ase_','fuente_','con_fin_','grupo_etario'))
+df<-select(data,-c('orden','cod_eve','grupo','cod_pais_r','version','muesttejid','mueshigado','muesbazo','muesriñon','muesmedula','muesmiocar','muescerebr','muespulmon','nom_eve','cod_ase_','fuente_','con_fin_','grupo_etario','aseguradora'))
 dim(df)
 ```
+
 Después de eliminar las columnas que no aportan información relevante para el análisis, se obtiene un total de 63 columnas.En el conjunto datos,existian algunas *features* que tenían un tipo de dato *character* , por lo cual , se convirtieron a un tipo de dato *date* con el fin de tener una mejor manipulación de datos y posteriormente realizar una mejor limpieza e ingeniería de características.
+
 ```{r}
 df<-df %>% mutate(across(c(fec_not,fec_con_,fec_hos_,fec_def_,ini_sin_),~ as.Date(.x,format='%d/%m/%Y')))
 print(head(df[c('fec_not','fec_con_','fec_hos_','fec_def_','ini_sin_')]))
 ```
+
 ```{r}
 categorical_data=c('clasif_edad','sexo_','tip_ss_','per_etn_','estrato_','gp_gestan','gp_mad_com','gp_otros','tip_cas_','famantdngu','COMUNA shp','gp_migrant','gp_discapa','fiebre','cefalea','diarrea','tip_cas_','conducta','clasfinal')
 numerical_data=c('año')
 ```
 
-### Limpieza de datos 
-Cuando se inicia un proyecto que involucra el análisis de datos , los mismos en la mayoría de las ocasiones se encontraran *sucios* , esto quiere decir que limpiar los datos es un proceso de eliminación de errores, valores atípicos e incoherencias (todas estas características se considera *suciedad*), y de garantía de que todos los datos están en un formato adecuado para el análisis[@dataclean].
-En primera instancia se analizaron los valores atipicos y  los datos erroneos , que en muchas ocasiones , se deben a una mala redacción o información simplemente obsoleta al representar valores atipicos que pueden añadir ruido extremadamente grande al conjunto de datos.
+### Limpieza de datos
+
+Cuando se inicia un proyecto que involucra el análisis de datos , los mismos en la mayoría de las ocasiones se encontraran *sucios* , esto quiere decir que limpiar los datos es un proceso de eliminación de errores, valores atípicos e incoherencias (todas estas características se considera *suciedad*), y de garantía de que todos los datos están en un formato adecuado para el análisis[@dataclean]. En primera instancia se analizaron los valores atipicos y los datos erroneos , que en muchas ocasiones , se deben a una mala redacción o información simplemente obsoleta al representar valores atipicos que pueden añadir ruido extremadamente grande al conjunto de datos.
 
 Los campos que corresponden a campos temporales , mas especificamente fechas , tienen un valor por defecto '1900-01-01'.
 
 ### Ingenieria de caracteristicas
+
 ```{r}
 df['t_notificacion']<-df$fec_not-df$ini_sin_
 df['t_notificacion'][df['t_notificacion']<0]<-duration(0,'days')
@@ -105,14 +131,28 @@ df['t_medico']<-df$fec_con_-df$ini_sin_
 df['t_medico'][df['t_notificacion']<0]<-duration(0,'days')
 ```
 
-### Codificación de datos 
+### Codificación de datos
+
 ```{r}
-df_n<-df[-c('fec_not','fec_con_','fec_hos_','fec_def_','ini_sin_')]
-code_var<-c('COMUNA','conducta','clasfinal','tip_ss',)
+df_n<-select(df,-c('fec_not','fec_con_','fec_hos_','fec_def_','ini_sin_'))
+code_var<-c('conducta','clasfinal','tip_ss_','clasif_edad','def_clas_edad','COMUNA shp','BARRIO_VER shp','sexo_')
+# encoder=LabelEncoder$new()
+# df_n[code_var]<-lapply(df_n[code_var],as.character)
+# df_n[code_var]<-encoder$fit_transform(df_n[code_var])
+# encoder$fit_transform(df_n[code_var])
+df_n[code_var]<-lapply(df_n[code_var],factor)
+df_n[code_var]<-lapply(df_n[code_var],as.numeric)
+df_n_estandarizado <- as.data.frame(lapply(df_n, function(x) {
+  if (is.numeric(x)) {
+    return(scale(x))
+  } else {
+    return(x)
+  }
+}))
 ```
 
-
 ## Resultados
+
 ```{r}
 for (var in categorical_data) {
   df_counts <- df %>%
@@ -122,35 +162,35 @@ for (var in categorical_data) {
   print(p)
 }
 ```
+
 ```{r}
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
 ```
 
 ## Including Plots
+
 ```{r pressure, echo=FALSE}
 plot(pressure)
 ```
 
-## Información anterior 
+## Información anterior
 
-Visualización
-Para poder identificar patrones y relaciones entre las variables de forma más sencilla para el lector, se utilizarán gráficos como histogramas, diagramas de caja (boxplots) y diagramas de dispersión, facilitando la interpretación visual de los datos.
+Visualización Para poder identificar patrones y relaciones entre las variables de forma más sencilla para el lector, se utilizarán gráficos como histogramas, diagramas de caja (boxplots) y diagramas de dispersión, facilitando la interpretación visual de los datos.
 
-Segmentación y perfiles de riesgo
-A través de técnicas de agrupamiento (clustering), se segmentarán los pacientes en diferentes grupos según sus características, lo que permitirá identificar posibles focos de riesgo y orientar mejor las políticas de prevención.
+Segmentación y perfiles de riesgo A través de técnicas de agrupamiento (clustering), se segmentarán los pacientes en diferentes grupos según sus características, lo que permitirá identificar posibles focos de riesgo y orientar mejor las políticas de prevención.
 
----
+------------------------------------------------------------------------
 
 ### El 1.3 de la rubrica va aqui, no sé qué poner todavía jaja
 
----
+------------------------------------------------------------------------
 
 Los resultados de este análisis serán útiles para varios grupos involucrados en la salud pública y el bienestar social como:
 
-- **Autoridades sanitarias locales**: Podrán utilizar los hallazgos para dirigir campañas preventivas a las comunidades más afectadas y en riesgo. Además, podrán priorizar recursos para los pacientes más vulnerables.
-  
-- **Instituciones de salud**: La segmentación de pacientes ayudará a mejorar la atención, ya que podrán identificar rápidamente a los pacientes con mayor riesgo de complicaciones graves.
-  
-- **Comunidad en general**: Las campañas de concientización y prevención se podrán diseñar de manera más efectiva, basadas en los síntomas prevalentes y los perfiles de riesgo de la población.
+-   **Autoridades sanitarias locales**: Podrán utilizar los hallazgos para dirigir campañas preventivas a las comunidades más afectadas y en riesgo. Además, podrán priorizar recursos para los pacientes más vulnerables.
+
+-   **Instituciones de salud**: La segmentación de pacientes ayudará a mejorar la atención, ya que podrán identificar rápidamente a los pacientes con mayor riesgo de complicaciones graves.
+
+-   **Comunidad en general**: Las campañas de concientización y prevención se podrán diseñar de manera más efectiva, basadas en los síntomas prevalentes y los perfiles de riesgo de la población.
 
 ## References
