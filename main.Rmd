@@ -42,6 +42,7 @@ Para el proyecto se plantean las siguientes preguntas de investigación:
 library(ggplot2)
 library(dplyr)
 library(tidyverse)
+library(lubridate)
 ```
 
 ### Cargando los datos
@@ -77,7 +78,7 @@ sapply(data,typeof)
 ```
 Antes de realizar la distinción de datos categóricos y numéricos,se eliminan algunas columnas que no aportan información relevante para el análisis.
 ```{r}
-df<-select(data,-c('orden','cod_eve','grupo','cod_pais_r','version','muesttejid','mueshigado','muesbazo','muesriñon','muesmedula','muesmiocar','muescerebr','muespulmon','nom_eve','cod_ase_','fuente_','con_fin_'))
+df<-select(data,-c('orden','cod_eve','grupo','cod_pais_r','version','muesttejid','mueshigado','muesbazo','muesriñon','muesmedula','muesmiocar','muescerebr','muespulmon','nom_eve','cod_ase_','fuente_','con_fin_','grupo_etario'))
 dim(df)
 ```
 Después de eliminar las columnas que no aportan información relevante para el análisis, se obtiene un total de 63 columnas.En el conjunto datos,existian algunas *features* que tenían un tipo de dato *character* , por lo cual , se convirtieron a un tipo de dato *date* con el fin de tener una mejor manipulación de datos y posteriormente realizar una mejor limpieza e ingeniería de características.
@@ -93,6 +94,23 @@ numerical_data=c('año')
 ### Limpieza de datos 
 Cuando se inicia un proyecto que involucra el análisis de datos , los mismos en la mayoría de las ocasiones se encontraran *sucios* , esto quiere decir que limpiar los datos es un proceso de eliminación de errores, valores atípicos e incoherencias (todas estas características se considera *suciedad*), y de garantía de que todos los datos están en un formato adecuado para el análisis[@dataclean].
 En primera instancia se analizaron los valores atipicos y  los datos erroneos , que en muchas ocasiones , se deben a una mala redacción o información simplemente obsoleta al representar valores atipicos que pueden añadir ruido extremadamente grande al conjunto de datos.
+
+Los campos que corresponden a campos temporales , mas especificamente fechas , tienen un valor por defecto '1900-01-01'.
+
+### Ingenieria de caracteristicas
+```{r}
+df['t_notificacion']<-df$fec_not-df$ini_sin_
+df['t_notificacion'][df['t_notificacion']<0]<-duration(0,'days')
+df['t_medico']<-df$fec_con_-df$ini_sin_
+df['t_medico'][df['t_notificacion']<0]<-duration(0,'days')
+```
+
+### Codificación de datos 
+```{r}
+df_n<-df[-c('fec_not','fec_con_','fec_hos_','fec_def_','ini_sin_')]
+code_var<-c('COMUNA','conducta','clasfinal','tip_ss',)
+```
+
 
 ## Resultados
 ```{r}
