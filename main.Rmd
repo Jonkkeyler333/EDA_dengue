@@ -51,8 +51,19 @@ library(dplyr)
 library(tidyverse)
 library(lubridate)
 library(superml)
+library(FactoMineR)
+library(factoextra)
+library(hrbrthemes)
+
+#Algunas Funciones utiles
 standard_scaler<-function(x){
-  return x
+  x_std<-c()
+  mean_x<-mean(x)
+  std_x<-sd(x)
+  for(elem in x){
+    x_std<-c(x_std,(elem-mean_x)/(std_x))
+  }
+  return (x_std)
 }
 ```
 
@@ -142,14 +153,23 @@ code_var<-c('conducta','clasfinal','tip_ss_','clasif_edad','def_clas_edad','COMU
 # encoder$fit_transform(df_n[code_var])
 df_n[code_var]<-lapply(df_n[code_var],factor)
 df_n[code_var]<-lapply(df_n[code_var],as.numeric)
-df_n_estandarizado <- as.data.frame(lapply(df_n, function(x) {
-  if (is.numeric(x)) {
-    return(scale(x))
-  } else {
-    return(x)
-  }
-}))
+df_ns<-as.data.frame(lapply(df_n,standard_scaler))
+sd(df_ns$clasfinal)
+mean(df_ns$clasfinal)
+head(df_ns)
 ```
+### Analisis de componentes principales (PCA)
+```{r}
+pca<-PCA(df_ns,scale.unit=FALSE,ncp=5,graph=FALSE)
+print(pca$eig[1:10,])
+pca_plot<-as.data.frame(pca$ind$coord[,1:2])
+pca_plot$clasfinal<-df_n$clasfinal
+fviz_screeplot(pca, ncp = 5)
+```
+```{r message=FALSE, warning=FALSE}
+ggplot(pca_plot,aes(x=Dim.1,y=Dim.2,alpha=factor(clasfinal),color=factor(clasfinal),shape = factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (PC1)",y="Componente Principal 2 (PC2)")+theme_ipsum()
+```
+
 
 ## Resultados
 
