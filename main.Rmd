@@ -146,7 +146,7 @@ print(table(df$famantdngu))
 Los campos que corresponden a campos temporales , mas especificamente fechas , tienen un valor por defecto '1900-01-01'.
 
 ### Ingenieria de caracteristicas
-La ingeniería de características implica la extracción y transformación de variables a partir de datos sin procesar,esto puede incluir generar nuevas caracteristicas que tengan información mas util que los datos que se encuentran sin procesar. En este caso , se generaron nuevas caracteristicas a partir de las fechas de notificación, consulta, hospitalización y defunción, con el fin de obtener información relevante para el análisis.La primera nueva caracteristica consistia en el tiempo que una persona diagnosticada de dengue notificaba oficialmente su caso ante las autoridades sanitarias, la segunda caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en acudir a consulta médica, la tercera caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en ser hospitalizada y la cuarta caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en fallecer.
+La ingeniería de características implica la extracción y transformación de variables a partir de datos sin procesar,esto puede incluir generar nuevas caracteristicas que tengan información mas util que los datos que se encuentran sin procesar. En este caso , se generaron nuevas caracteristicas a partir de las fechas de notificación, consulta, hospitalización y defunción, con el fin de obtener información relevante para el análisis.La primera nueva caracteristica consistia en el tiempo que una persona diagnosticada de dengue notificaba oficialmente su caso ante las autoridades sanitarias, la segunda caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en acudir a consulta médica, la tercera caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en ser hospitalizada y la cuarta caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en fallecer si ese fuese el caso del paciente .Si no se cumplia el caso (por ejemplo la persona no fallecío), se procedia a asignar un valor de 0 días para la caracteristica en cuestión.
 ```{r}
 df['t_notificacion']<-df$fec_not-df$ini_sin_
 df['t_notificacion'][df['t_notificacion']<0]<-duration(0,'days')
@@ -156,6 +156,11 @@ df['t_hospital']<-df$fec_hos_-df$ini_sin_
 df['t_hospital'][df['t_notificacion']<0]<-duration(0,'days')
 df['t_defuncion']<-df$fec_def_-df$ini_sin_
 df['t_defuncion'][df['t_notificacion']<0]<-duration(0,'days')
+summary(as.numeric(df$t_notificacion))
+summary(as.numeric(df$t_medico))
+summary(as.numeric(df$t_hospital))
+summary(as.numeric(df$t_defuncion))
+
 ```
 
 ### Codificación de datos
@@ -207,13 +212,7 @@ for (var in categorical_data) {
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
 ```
 
-## Including Plots
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-## Información anterior
+#### Información anterior
 
 Visualización Para poder identificar patrones y relaciones entre las variables de forma más sencilla para el lector, se utilizarán gráficos como histogramas, diagramas de caja (boxplots) y diagramas de dispersión, facilitando la interpretación visual de los datos.
 
