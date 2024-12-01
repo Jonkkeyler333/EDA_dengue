@@ -156,11 +156,13 @@ df['t_hospital']<-df$fec_hos_-df$ini_sin_
 df['t_hospital'][df['t_notificacion']<0]<-duration(0,'days')
 df['t_defuncion']<-df$fec_def_-df$ini_sin_
 df['t_defuncion'][df['t_notificacion']<0]<-duration(0,'days')
+```
+Se muestran los resumenes estadisticos de las nuevas caracteristicas generadas para verificar que el proceso se hubiese realizado de una manera exitosa
+```{r}
 summary(as.numeric(df$t_notificacion))
 summary(as.numeric(df$t_medico))
 summary(as.numeric(df$t_hospital))
 summary(as.numeric(df$t_defuncion))
-
 ```
 
 ### Codificación de datos
