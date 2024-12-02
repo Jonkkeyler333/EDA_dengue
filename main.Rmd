@@ -1,12 +1,14 @@
 ---
-title: "Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio .."
+title: 'Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio ..'
 author: "Keyler Sanchez - Greyler Chacon - Samuel Traslaviña "
 date: "2024-11-20"
-output: 
+output:
+  pdf_document:
+    toc: true
   html_document:
-    theme: yeti           
-    toc: TRUE                     
-    toc_float: TRUE
+    theme: yeti
+    toc: true
+    toc_float: true
 lang: es
 bibliography: bibliografia.bib
 ---
