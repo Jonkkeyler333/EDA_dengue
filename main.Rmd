@@ -3,12 +3,14 @@ title: 'Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio ..'
 author: "Keyler Sanchez - Greyler Chacon - Samuel Traslaviña "
 date: "2024-11-20"
 output:
-  pdf_document:
-    toc: true
   html_document:
-    theme: yeti
-    toc: true
-    toc_float: true
+    theme: cosmo
+    toc: TRUE
+    toc_float: TRUE
+    df_print: paged
+    number_sections: TRUE 
+  pdf_document:
+    toc: TRUE
 lang: es
 bibliography: bibliografia.bib
 ---
@@ -154,7 +156,8 @@ print(head(df[c('fec_not','fec_con_','fec_hos_','fec_def_','ini_sin_')]))
 ```
 
 ```{r}
-categorical_data=c('clasif_edad','sexo_','tip_ss_','per_etn_','estrato_','gp_gestan','gp_mad_com','gp_otros','tip_cas_','famantdngu','COMUNA shp','gp_migrant','gp_discapa','fiebre','cefalea','diarrea','tip_cas_','conducta','clasfinal')
+categorical_data=c('clasif_edad','sexo_','tip_ss_','per_etn_','estrato_','gp_gestan','gp_mad_com','tip_cas_','famantdngu','COMUNA shp','gp_migrant','gp_discapa','fiebre','cefalea','diarrea','tip_cas_','conducta','clasfinal')
+sintomas=c('fiebre','cefalea','dolrretroo','malgias','artralgia','erupcionr','dolor_abdo','vomito','diarrea','somnolenci','hepatomeg','hem_mucosa','hipotermia','aum_hemato','caida_plaq','acum_liqui','extravasac','hemorr_hem','choque','daño_organ')
 ```
 
 ### Limpieza de datos
@@ -186,11 +189,11 @@ La ingeniería de características implica la extracción y transformación de v
 df['t_notificacion']<-df$fec_not-df$ini_sin_
 df['t_notificacion'][df['t_notificacion']<0]<-duration(0,'days')
 df['t_medico']<-df$fec_con_-df$ini_sin_
-df['t_medico'][df['t_notificacion']<0]<-duration(0,'days')
+df['t_medico'][df['t_medico']<0]<-duration(0,'days')
 df['t_hospital']<-df$fec_hos_-df$ini_sin_
-df['t_hospital'][df['t_notificacion']<0]<-duration(0,'days')
+df['t_hospital'][df['t_hospital']<0]<-duration(0,'days')
 df['t_defuncion']<-df$fec_def_-df$ini_sin_
-df['t_defuncion'][df['t_notificacion']<0]<-duration(0,'days')
+df['t_defuncion'][df['t_defuncion']<0]<-duration(0,'days')
 ```
 
 Se muestran los resúmenes estadísticos de las nuevas características generadas para verificar que el proceso se hubiese realizado de una manera exitosa
@@ -230,15 +233,35 @@ knitr::kable(
 
 #### Escalado de datos o *feature scaling*
 
-Un paso adicional de preprocesamiento que se realizó al dataframe final , fue aplicarle el proceso de escalado ,en algunos casos le denominan estandarización, pero , esta es una de las técnicas mas usadas en este proceso y tambien le que se empleó en este caso.La estandarización se define de la siguiente manera[@geron2022hands] : $ X_{scaled}=\frac{X_i-\mu_{x}}{\sigma_{x}}} $ ,permite  *estandarizar* las características independientes presentes en los datos en un rango fijo , es util para manejar magnitudes, valores o unidades muy variables y tambien muy importante , lograr asimilar la distribución de la caracteristicas a una distribución normal.
+Un paso adicional de preprocesamiento que se realizó al dataframe final , fue aplicarle el proceso de escalado ,en algunos casos le denominan estandarización, pero , esta es una de las técnicas más usadas en este proceso y también le que se empleó en este caso. La estandarización se define de la siguiente manera[@geron2022hands] : $X_{scaled}=\frac{X_i-\mu_{x}}{\sigma_{x}}$ ,permite *estandarizar* las características independientes presentes en los datos en un rango fijo , es útil para manejar magnitudes, valores o unidades muy variables y también muy importante , lograr asimilar la distribución de la características a una distribución normal.
 
 ```{r}
 df_ns<-as.data.frame(lapply(df_n,standard_scaler))
-sd(df_ns$clasfinal)
-mean(df_ns$clasfinal)
-mean(df_ns)
-head(df_ns)
 ```
+
+Una muestra del resultado de la transformación
+
+```{r,warning=FALSE,echo=FALSE}
+ggplot(data=df_ns,aes(x=t_notificacion))+geom_histogram(fill='blue',bins=39)+labs(title='Distribución de la caracteristica t_notificacion',x='t_notificacion',y='count')+theme_ipsum()
+```
+### Análisis exploratorio de datos (*EDA*)
+El análisis exploratorio de datos o *EDA* , es una técnica crucial en cualquier proyecto que involucre datos,*EDA* trata de analizar características clave, descubrir patrones e identificar relaciones entre variables o *features* del conjunto de datos,estudian y exploraran conjuntos de registros para comprender sus rasgos predominantes, descubrir patrones, localizar valores atípicos e identificar relaciones entre variables.
+Se empezó con enfoques basicos como agrupaciones o conteos de los datos para tener una idea de la distribución de los mismos.
+
+En primer lugar se contó el número de casos de dengue por clasificación final de la enfermedad, para tener una idea de la distribución de los casos en el conjunto de datos.
+```{r}
+table(df_n$clasfinal)
+```
+Caracterizando un poco la población infectada con el virus del dengue en Bucaramanga,se contó el número de casos agrupados por grupo  de edad : 
+
+```{r}
+df_n%>%count(clasif_edad,clasfinal)%>%group_by(clasif_edad)%>%mutate(total_contaguiados_edad=sum(n))
+```
+la distribución de lo datos es mayoritariamente población masculina , donde para este tipo de población predomino el dengue con signos de alarma , seguido por el dengue sin signos de alarma y por último el dengue grave.La distribución del dengue para el sexo femenino fue similar a la del sexo masculino.Como se muestra a continuación:
+```{r}
+df_n%>%count(sexo_,clasfinal)%>%group_by(sexo_)%>%mutate(total_contaguiados_sexo=sum(n))
+```
+
 
 ### Analisis de componentes principales (PCA)
 
@@ -255,10 +278,6 @@ fviz_screeplot(pca,ncp=5)
 ggplot(pca_plot_filtered,aes(x=Dim.1,y=Dim.2,alpha=factor(clasfinal),color=factor(clasfinal),shape = factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (PC1)",y="Componente Principal 2 (PC2)")+theme_ipsum()
 ```
 
-```{r}
-ggplot(data=pca_plot_filtered,aes(x="",y=Dim.1))+geom_boxplot() 
-```
-
 ## Resultados
 
 ```{r}
@@ -266,10 +285,13 @@ for (var in categorical_data) {
   df_counts <- df %>%
     group_by(!!sym(var))%>%summarise(count=n(),.groups="drop")
   p<-ggplot(df_counts,aes(x=!!sym(var),y=count,fill=!!sym(var))) +
-    geom_bar(stat="identity")+labs(title=paste("Distribución de la caracteristica",var),x=var,y="Frecuencia")+theme(axis.text.x = element_text(angle = 45, hjust = 1),legend.position = "none")        
+    geom_bar(stat="identity")+labs(title=paste("Distribución de la caracteristica",var),x=var,y="Frecuencia")+theme(axis.text.x = element_text(angle = 45, hjust = 1),legend.position = "none")
   print(p)
 }
 ```
+Se obtuvo que el dengue con signos de alarma (representado por 1) es el que mayormente presentaron los ciudados infectados por el virus en la ciudad de Bucaramanga , seguido por el dengue sin signos de alarma (representado por 2) y unicamente 26 casos de dengue en su forma grave
+
+El grupo de edad que se contaguio mas con el virus del dengue fue el grupo de edad de 29 a 59 años que contó, seguido por el grupo de edad de 30 a 39 años y el grupo de edad de 18 a 28 años.Se observó lgo interesante , el grupo poblacional de mas de 60 años fue el menos afectado por el virus del dengue.
 
 ```{r}
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
@@ -283,7 +305,6 @@ df['COMUNA shp']
 print('hello')
 ```
 
-## Resultados
 
 ## Analisis de resultados y discusión
 
