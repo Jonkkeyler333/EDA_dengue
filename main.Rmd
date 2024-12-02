@@ -70,11 +70,21 @@ standard_scaler<-function(x){
 
 ### Cargando los datos
 
-Los datos que se emplearán en el proyecto corresponde a casos de dengue reportados oficialmente mediante fichas de notificación individual (los registros se encuentran de manera anonima sin ningun tipo de indentificación),no se encuentran directamente dispuestos para usar en el entorno de R,los datos obtenidos en el portal web de datos.gov [acceso al conjunto de datos originales](https://www.datos.gov.co/Salud-y-Protecci-n-Social/Dengue-Dengue-grave-y-mortalidad-por-dengue-munici/qzc7-jbg3/about_data), portal en el cual se alojan gran cantidad de conjuntos de datos e información abierta para los Colombianos con fines de transparencia y acceso a la información. Para cargar los datos se emplea la función `read_csv` del paquete `readr` que permite leer archivos csv de forma rápida y eficiente para luego ser procesados en un dataframe.
+Los datos que se emplearán en el proyecto corresponde a casos de dengue reportados oficialmente mediante fichas de notificación individual (los registros se encuentran de manera anonima sin ningun tipo de indentificación),como muestra la siguiente figura
+
+![ficha de notificación individual caso de dengue](figures/img1.jpg){width="217"}
+
+no se encuentran directamente dispuestos para usar en el entorno de R,los datos obtenidos en el portal web de datos.gov [acceso al conjunto de datos originales](https://www.datos.gov.co/Salud-y-Protecci-n-Social/Dengue-Dengue-grave-y-mortalidad-por-dengue-munici/qzc7-jbg3/about_data), portal en el cual se alojan gran cantidad de conjuntos de datos e información abierta para los Colombianos con fines de transparencia y acceso a la información. Para cargar los datos se emplea la función `read_csv` del paquete `readr` que permite leer archivos csv de forma rápida y eficiente para luego ser procesados en un dataframe.Se realizó una muestra de los datos:
 
 ```{r}
 data<-read_csv('data/data_dengue.csv',show_col_types=FALSE)
-head(data)
+```
+
+```{r,echo=FALSE}
+knitr::kable(
+  head(data), 
+  caption = "Datos extraídos y procesados en un dataframe de R"
+)
 ```
 
 Es necesario realizar la aclaración que cada registro corresponde a un caso positivo de dengue de una persona en la ciudad de bucaramanga con datos hasta el 12 de diciembre de 2023.
@@ -87,9 +97,12 @@ El conjunto de datos que se cargó , consta de 10159 observaciones y un total de
 
 ### Limpiando los datos
 
-El proceso de limpieza de datos consiste en identificar y corregir los errores y anomalías en los datos, como valores faltantes, valores atípicos y datos duplicados, para garantizar que los datos sean precisos y confiables para el análisis. \#### Valores faltantes Luego de cargar los datos , se debe revisar que cada *feature* (columna del conjunto de datos) no cuente con valores faltantes o *missing values*.
+El proceso de limpieza de datos consiste en identificar y corregir los errores y anomalías en los datos, como valores faltantes, valores atípicos y datos duplicados, para garantizar que los datos sean precisos y confiables para el análisis. 
 
-```{r}
+### Valores faltantes 
+Luego de cargar los datos , se debe revisar que cada *feature* (columna del conjunto de datos) no cuente con valores faltantes o *missing values*.
+
+```{r,echo=FALSE}
 missing_data=sort(colSums(is.na(data)),decreasing=TRUE)
 ggplot()+geom_bar(aes(x=names(head(missing_data,20)),y=head(missing_data,20)),stat="identity",fill='blue')+theme(axis.text.x=element_text(angle=45,hjust=1))+labs(title='Valores faltantes',x='features',y='# de valores faltantes')
 ```
@@ -233,8 +246,7 @@ print('hello')
 
 ## Analisis de resultados y discusión
 
-## Conlusiones 
-
+## Conlusiones
 
 #### Información anterior
 
