@@ -53,7 +53,3 @@ class VAE(models.Model):
         kl_loss=-0.5*K.sum(1+log_var-K.square(mean)-K.exp(log_var),axis=-1)
         self.add_loss(K.mean(kl_loss)/self.original_dim)
         return output
-        
-        
-if __name__=="__main__":
-    print(K.random_normal(shape=tf.shape(K.random_normal(shape=(2,2)))))
