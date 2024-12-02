@@ -97,9 +97,10 @@ El conjunto de datos que se cargó , consta de 10159 observaciones y un total de
 
 ### Limpiando los datos
 
-El proceso de limpieza de datos consiste en identificar y corregir los errores y anomalías en los datos, como valores faltantes, valores atípicos y datos duplicados, para garantizar que los datos sean precisos y confiables para el análisis. 
+El proceso de limpieza de datos consiste en identificar y corregir los errores y anomalías en los datos, como valores faltantes, valores atípicos y datos duplicados, para garantizar que los datos sean precisos y confiables para el análisis.
 
-### Valores faltantes 
+### Valores faltantes
+
 Luego de cargar los datos , se debe revisar que cada *feature* (columna del conjunto de datos) no cuente con valores faltantes o *missing values*.
 
 ```{r,echo=FALSE}
@@ -111,15 +112,25 @@ Se obtuvo que la caracteristica llamada *ocupacion* , esta columna representa el
 
 ```{r}
 data<-data %>% replace_na(list(ocupacion_=1))
-print(sort(colSums(is.na(data)),decreasing=TRUE))
+#print(sort(colSums(is.na(data)),decreasing=TRUE))
+```
+
+```{r,echo=FALSE}
+knitr::kable(
+  sort(colSums(is.na(data)),decreasing=TRUE), 
+  caption = "Valores faltantes en el conjunto de datos"
+)
 ```
 
 ### Tipos de datos
 
 Es necesario revisar los tipos de datos de cada columna para asegurarse que sean los adecuados para realizar cálculos , gráficos y analisis. De aquí se determinan que *features* son categóricas y cuáles son numéricas, ya que las categóricas deben recibir un tratamiento especial como lo será la codificación de las mismas.
 
-```{r}
-sapply(data,typeof)
+```{r,echo=FALSE}
+knitr::kable(
+  sapply(data,typeof), 
+  caption = "Tipos de datos en el conjunto de datos"
+)
 ```
 
 Antes de realizar la distinción de datos categóricos y numéricos,se eliminan algunas columnas que no aportan información relevante para el análisis.
