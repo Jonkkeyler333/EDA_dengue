@@ -261,6 +261,9 @@ for (var in categorical_data) {
 ```{r}
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
 ```
+```{r}
+df['COMUNA shp']
+```
 
 ```{python}
 print('hello')
