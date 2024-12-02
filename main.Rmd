@@ -149,7 +149,6 @@ print(head(df[c('fec_not','fec_con_','fec_hos_','fec_def_','ini_sin_')]))
 
 ```{r}
 categorical_data=c('clasif_edad','sexo_','tip_ss_','per_etn_','estrato_','gp_gestan','gp_mad_com','gp_otros','tip_cas_','famantdngu','COMUNA shp','gp_migrant','gp_discapa','fiebre','cefalea','diarrea','tip_cas_','conducta','clasfinal')
-numerical_data=c('año')
 ```
 
 ### Limpieza de datos
@@ -188,7 +187,7 @@ df['t_defuncion']<-df$fec_def_-df$ini_sin_
 df['t_defuncion'][df['t_notificacion']<0]<-duration(0,'days')
 ```
 
-Se muestran los resumenes estadisticos de las nuevas caracteristicas generadas para verificar que el proceso se hubiese realizado de una manera exitosa
+Se muestran los resúmenes estadísticos de las nuevas características generadas para verificar que el proceso se hubiese realizado de una manera exitosa
 
 ```{r}
 summary(as.numeric(df$t_notificacion))
@@ -199,18 +198,26 @@ summary(as.numeric(df$t_defuncion))
 
 ### Codificación de datos
 
+Al ir analizando el conjunto de datos , hasta el momento de las 58 características que cuenta el conjunto de datos, tan solo seis de las mismas son numéricas y el resto son categóricas. Entonces la gran presencia de este tipo de variables o características producen que un análisis exploratorio de datos usando parametros estadísticos , como mediana , media , moda ,etc,no tenga mucho sentido en este caso, por lo cual , para los diferentes enfoques que se emplearon para este trabajo , el uso de caracteristicas que involucren datos no númericos (ya que existian algunas características ya categóricas con datos numéricos) , es de nula utilidad,entonces se buscó una solución a dicho problema.La codificación de variables asigna un valor numérico a cada categoría de la característica , existen diversos enfoques , pero , el que se utilizó en este caso fue la codificación de etiquetas o *label-encoding* , que asigna un valor numérico a cada categoria de la característica sin agregar nuevas columnas como el enfoque *one-hot encoding*[@enco].
+
 ```{r}
 df_n<-select(df,-c('fec_not','fec_con_','fec_hos_','fec_def_','ini_sin_'))
 code_var<-c('conducta','clasfinal','tip_ss_','clasif_edad','def_clas_edad','COMUNA shp','BARRIO_VER shp','sexo_')
-# encoder=LabelEncoder$new()
-# df_n[code_var]<-lapply(df_n[code_var],as.character)
-# df_n[code_var]<-encoder$fit_transform(df_n[code_var])
-# encoder$fit_transform(df_n[code_var])
 df_n[code_var]<-lapply(df_n[code_var],factor)
 df_n[code_var]<-lapply(df_n[code_var],as.numeric)
+```
+
+```{r,echo=FALSE}
+summary(df_n)
+```
+
+estandarizacion
+
+```{r}
 df_ns<-as.data.frame(lapply(df_n,standard_scaler))
 sd(df_ns$clasfinal)
 mean(df_ns$clasfinal)
+mean(df_ns)
 head(df_ns)
 ```
 
@@ -258,25 +265,5 @@ print('hello')
 ## Analisis de resultados y discusión
 
 ## Conlusiones
-
-#### Información anterior
-
-Visualización Para poder identificar patrones y relaciones entre las variables de forma más sencilla para el lector, se utilizarán gráficos como histogramas, diagramas de caja (boxplots) y diagramas de dispersión, facilitando la interpretación visual de los datos.
-
-Segmentación y perfiles de riesgo A través de técnicas de agrupamiento (clustering), se segmentarán los pacientes en diferentes grupos según sus características, lo que permitirá identificar posibles focos de riesgo y orientar mejor las políticas de prevención.
-
-------------------------------------------------------------------------
-
-### El 1.3 de la rubrica va aqui, no sé qué poner todavía jaja
-
-------------------------------------------------------------------------
-
-Los resultados de este análisis serán útiles para varios grupos involucrados en la salud pública y el bienestar social como:
-
--   **Autoridades sanitarias locales**: Podrán utilizar los hallazgos para dirigir campañas preventivas a las comunidades más afectadas y en riesgo. Además, podrán priorizar recursos para los pacientes más vulnerables.
-
--   **Instituciones de salud**: La segmentación de pacientes ayudará a mejorar la atención, ya que podrán identificar rápidamente a los pacientes con mayor riesgo de complicaciones graves.
-
--   **Comunidad en general**: Las campañas de concientización y prevención se podrán diseñar de manera más efectiva, basadas en los síntomas prevalentes y los perfiles de riesgo de la población.
 
 ## References
