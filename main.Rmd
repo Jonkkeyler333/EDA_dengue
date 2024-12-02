@@ -213,11 +213,24 @@ df_n[code_var]<-lapply(df_n[code_var],factor)
 df_n[code_var]<-lapply(df_n[code_var],as.numeric)
 ```
 
+Ahora se muestra el resumen estadístico de las características codificadas para verificar que el proceso se haya realizado de manera exitosa.
+
 ```{r,echo=FALSE}
 summary(df_n)
 ```
 
-estandarizacion
+Finalmente el conjunto de datos con todo el preprocesamiento realizado anteriormente , ya se encontraba listo para realizar los repectivos analisis estadisticos.Se muestra unos registro del conjunto de datos:
+
+```{r,echo=FALSE}
+knitr::kable(
+  head(df_n,5), 
+  caption='Conjunto de datos final a utilizar' 
+)
+```
+
+#### Escalado de datos o *feature scaling*
+
+Un paso adicional de preprocesamiento que se realizó al dataframe final , fue aplicarle el proceso de escalado ,en algunos casos le denominan estandarización, pero , esta es una de las técnicas mas usadas en este proceso y tambien le que se empleó en este caso.La estandarización se define de la siguiente manera[@geron2022hands] : $ X_{scaled}=\frac{X_i-\mu_{x}}{\sigma_{x}}} $ ,permite  *estandarizar* las características independientes presentes en los datos en un rango fijo , es util para manejar magnitudes, valores o unidades muy variables y tambien muy importante , lograr asimilar la distribución de la caracteristicas a una distribución normal.
 
 ```{r}
 df_ns<-as.data.frame(lapply(df_n,standard_scaler))
@@ -261,6 +274,7 @@ for (var in categorical_data) {
 ```{r}
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
 ```
+
 ```{r}
 df['COMUNA shp']
 ```
