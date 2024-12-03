@@ -181,7 +181,7 @@ print(table(df$famantdngu))
 
 Los campos que corresponden a campos temporales , mas especificamente fechas , tienen un valor por defecto '1900-01-01'.
 
-### Ingenieria de caracteristicas
+### Ingeniería de características
 
 La ingeniería de características implica la extracción y transformación de variables a partir de datos sin procesar,esto puede incluir generar nuevas caracteristicas que tengan información mas util que los datos que se encuentran sin procesar. En este caso , se generaron nuevas caracteristicas a partir de las fechas de notificación, consulta, hospitalización y defunción, con el fin de obtener información relevante para el análisis.La primera nueva caracteristica consistia en el tiempo que una persona diagnosticada de dengue notificaba oficialmente su caso ante las autoridades sanitarias, la segunda caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en acudir a consulta médica, la tercera caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en ser hospitalizada y la cuarta caracteristica consistia en el tiempo que una persona diagnosticada de dengue tardaba en fallecer si ese fuese el caso del paciente .Si no se cumplia el caso (por ejemplo la persona no fallecío), se procedia a asignar un valor de 0 días para la caracteristica en cuestión.
 
@@ -244,22 +244,60 @@ Una muestra del resultado de la transformación
 ```{r,warning=FALSE,echo=FALSE}
 ggplot(data=df_ns,aes(x=t_notificacion))+geom_histogram(fill='blue',bins=39)+labs(title='Distribución de la caracteristica t_notificacion',x='t_notificacion',y='count')+theme_ipsum()
 ```
+
 ### Análisis exploratorio de datos (*EDA*)
-El análisis exploratorio de datos o *EDA* , es una técnica crucial en cualquier proyecto que involucre datos,*EDA* trata de analizar características clave, descubrir patrones e identificar relaciones entre variables o *features* del conjunto de datos,estudian y exploraran conjuntos de registros para comprender sus rasgos predominantes, descubrir patrones, localizar valores atípicos e identificar relaciones entre variables.
-Se empezó con enfoques basicos como agrupaciones o conteos de los datos para tener una idea de la distribución de los mismos.
+
+El análisis exploratorio de datos o *EDA* , es una técnica crucial en cualquier proyecto que involucre datos,*EDA* trata de analizar características clave, descubrir patrones e identificar relaciones entre variables o *features* del conjunto de datos,estudian y exploraran conjuntos de registros para comprender sus rasgos predominantes, descubrir patrones, localizar valores atípicos e identificar relaciones entre variables. Se empezó con enfoques basicos como agrupaciones o conteos de los datos para tener una idea de la distribución de los mismos.
 
 En primer lugar se contó el número de casos de dengue por clasificación final de la enfermedad, para tener una idea de la distribución de los casos en el conjunto de datos.
+
 ```{r}
 table(df_n$clasfinal)
 ```
-Caracterizando un poco la población infectada con el virus del dengue en Bucaramanga,se contó el número de casos agrupados por grupo  de edad : 
+
+Caracterizando un poco la población infectada con el virus del dengue en Bucaramanga,se contó el número de casos agrupados por grupo de edad :
 
 ```{r}
 df_n%>%count(clasif_edad,clasfinal)%>%group_by(clasif_edad)%>%mutate(total_contaguiados_edad=sum(n))
 ```
+
 la distribución de lo datos es mayoritariamente población masculina , donde para este tipo de población predomino el dengue con signos de alarma , seguido por el dengue sin signos de alarma y por último el dengue grave.La distribución del dengue para el sexo femenino fue similar a la del sexo masculino.Como se muestra a continuación:
+
 ```{r}
 df_n%>%count(sexo_,clasfinal)%>%group_by(sexo_)%>%mutate(total_contaguiados_sexo=sum(n))
+```
+
+#### Analisis de correspondecia (*correspondence analysis*)
+
+El conjunto de datos esta conformado mayoritariamente por variables categoricas , entonces , se eligió el analisis de correspondencia para poder obtener información mas precisa y relevante de los datos , como entender relaciones que puedan existir entre las caracteristicas. Se define el análisis de la correspondencia como una metodología estadística utilizada para identificar y visualizar los patrones ocultos y las asociaciones entre variables categóricas en datos multivariados donde las variables tienen categorías discretas en lugar de valores numéricos[@MCA].En el caso del estudio estadistico que se llevó acabo , esta tecnica resulto muy util ya que es ampliamente usada con datos que son originados a partir de cuestionarios.
+El proceso matematico del analisis de correspondencia múltiple que es realmente el metodo que se aplicó al tener varias *features*,  se basa en la descomposición de la matriz de contingencia en valores singulares y la proyección de los datos en un espacio de menor dimensión , el proceso matematico riguroso se obvio un poco por su complejidad.
+Se usó la función `MCA` del paquete de R `FactoMineR` para realizar el análisis de correspondencia múltiple.
+```{r}
+mca<-MCA(data.frame(lapply(df_n[c(categorical_data,sintomas)],factor)),graph=FALSE)
+```
+La técnica del MCA al emplear el *SVD* genera un conjunto de valores y vectores propios , que lo importante de estos conceptos es generan un número espacio de menor dimensión donde se *compactan* o proyectan los datos individuales en componentes que preservan ciertos porcentajes de la varianza original de los datos.
+```{r}
+head(get_eigenvalue(mca))
+```
+En la salida anterior se mostraron del lado de las columnas los componentes o ejes nuevos, resultados del análisis MCA, mientras que en la primera columna se muestran los valores propios que representan la magnitud de las componentes o el tamaño de las varianzas que explica cada uno, mientras que en la segunda columna se muestra el porcentaje de la varianza total que es explicado por cada eje o dimensión. En la tercera columna se muestra el porcentaje de varianza acumulado.
+La idea de este análisis es observar principalmente las relaciones entre las variables que se desearon estudiar en el *EDA*,`get_mca_var` es una función que permite obtener las contribuciones de las variables a los componentes principales. 
+```{r}
+contribs=get_mca_var(mca)$contrib
+orden=order(contribs[,'Dim 1'],decreasing=TRUE)
+```
+```{r,echo=FALSE}
+knitr::kable(
+  contribs[orden,], 
+  caption='Conjunto de datos final a utilizar' 
+)
+```
+Al observar los resultados de contribución , las características *clasfinal* , *conducta* y *fiebre* son las que mas contribuyen al primer componente principal , mientras que las características también de sintomatología fueron más contribuyente a la segunda componente. Esto demuestra que estas variables tienen una gran importancia e influencia en el conjunto de datos , describiendo y representando cada registro por ellas.
+El siguiente gráfico presenta las coordenadas o distancias calculadas a partir del al valor de las correlaciones cuadráticas entre las variables y las dimensiones.
+```{r,echo=FALSE}
+fviz_mca_var(mca,choice="mca.cor",repel=TRUE)
+```
+```{r}
+fviz_mca_var(mca,repel=TRUE,col.var="blue",shape.var=15)
 ```
 
 
@@ -289,6 +327,7 @@ for (var in categorical_data) {
   print(p)
 }
 ```
+
 Se obtuvo que el dengue con signos de alarma (representado por 1) es el que mayormente presentaron los ciudados infectados por el virus en la ciudad de Bucaramanga , seguido por el dengue sin signos de alarma (representado por 2) y unicamente 26 casos de dengue en su forma grave
 
 El grupo de edad que se contaguio mas con el virus del dengue fue el grupo de edad de 29 a 59 años que contó, seguido por el grupo de edad de 30 a 39 años y el grupo de edad de 18 a 28 años.Se observó lgo interesante , el grupo poblacional de mas de 60 años fue el menos afectado por el virus del dengue.
@@ -304,7 +343,6 @@ df['COMUNA shp']
 ```{python}
 print('hello')
 ```
-
 
 ## Analisis de resultados y discusión
 
