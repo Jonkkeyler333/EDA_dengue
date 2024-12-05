@@ -1,13 +1,20 @@
 library(httr)   
 library(sf)          
-library(dyplr)
+library(dplyr)
+library(leaflet)
+library(geojsonio)
 library(RColorBrewer) 
+
+
+
 url <- "https://vmarcgis01.bucaramanga.gov.co/waserver/rest/services/LIMITES_POLITICOS/Barrios/FeatureServer/0/query?where=1%3D1&outFields=COD_COMUNA,NOMBRE_BAR,NOMBRE_ENT&f=geojson"
 response <- GET(url)
 temp_file <- tempfile(fileext = ".geojson")
 writeBin(content(response, "raw"), temp_file)
 mapa_bucaramanga <- st_read(temp_file)
 print(mapa_bucaramanga)
+
+
 df_filtrado <- df %>%
   filter(`BARRIO_VER shp` != "SIN INFORMACION")
 

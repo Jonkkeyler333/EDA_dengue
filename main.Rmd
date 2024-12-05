@@ -43,11 +43,11 @@ El objetivo de este proyecto es analizar los datos de dengue en Bucaramanga para
 
 Para el proyecto se plantean las siguientes preguntas de investigación:
 
-1.  ¿Cual es el perfil de las personas que presentaron dengue grave que fallecieron o sobrevivieron?.
+1.  ¿Cuál es el perfil de las personas que presentaron dengue grave que fallecieron o sobrevivieron?.
 
-2.  ¿Que sintomas se presentan con mayor predominancia en cada uno de los tipos de dengue (sin signos de alarma,con signos de alarma,grave).
+2.  ¿Que síntomas se presentan con mayor predominancia en cada uno de los tipos de dengue (sin signos de alarma,con signos de alarma,grave).
 
-3.  Generar grupos (*clusters*) de personas infectadas con el virus del dengue con fines de determinar perfiles e información util para generar campañas de prevención mas focalizadas.
+3.  ¿Es posible generar grupos de personas con fines de generar un análisis más detallado y además lograr obtener conclusiones útiles con fines de generar campañas de prevención focalizadas?.
 
 ## Metodologia
 
@@ -63,6 +63,10 @@ library(FactoMineR)
 library(factoextra)
 library(hrbrthemes)
 library(dbscan)
+library(cluster)
+
+#Establecimiento de una semilla
+set.seed(123)
 
 #Algunas Funciones utiles
 standard_scaler<-function(x){
@@ -313,7 +317,9 @@ Se hizo necesario adoptar técnicas de reducción de dimensionalidad,para lograr
 
 ### Analisis de componentes principales (*PCA*)
 
-El *PCA* es una técnica de reducción de dimensionalidad de datos que transforma un gran conjunto de variables correlacionadas entre ellas , a un conjunto mucho más pequeño de variables que no están correlacionadas que se les da el nombre de componentes principales,estas componentes principales tratan de mantener la varianza original de los datos. Una manera matemática algo superficial de entender el PCA es que es los componentes resultantes son combinaciones lineales de las variables originales ![Desenrollando el PCA](figures/pca.png){width="217"}
+El *PCA* es una técnica de reducción de dimensionalidad de datos que transforma un gran conjunto de variables correlacionadas entre ellas , a un conjunto mucho más pequeño de variables que no están correlacionadas que se les da el nombre de componentes principales,estas componentes principales tratan de mantener la varianza original de los datos. Una manera matemática algo superficial de entender el PCA es que es los componentes resultantes son combinaciones lineales de las variables originales.
+
+![Desenrollando el PCA](figures/pca.png){width="217"}
 
 ```{r}
 pca<-PCA(df_ns,scale.unit=TRUE,graph=FALSE,ncp=30)
@@ -327,9 +333,12 @@ knitr::kable(
 ```
 
 Se buscó el número de componentes que acumulan al menos 80% de la varianza de los datos
+
 ```{r}
 fviz_screeplot(pca,ncp=40)+geom_vline(xintercept = which(cumsum(pca$eig[,2])>=80)[1],color="blue",linetype = "dashed")+theme(axis.text.x= element_text(angle=45,hjust=1))+labs(y='Porcentaje de la varianza explicada',x='Dimensiones')
 ```
+
+Se realizó un gráfico de las dos primeras componentes principales para visualizar la distribución de los datos en un espacio de menor dimensión y caracterizando cada punto con la clasificación final de la enfermedad.
 
 ```{r}
 pca_plot<-as.data.frame(pca$ind$coord[,1:2])
@@ -338,16 +347,57 @@ pca_plot_filtered<-pca_plot%>%filter(Dim.1>=-20&Dim.1<=20,Dim.2>=-20&Dim.2<=20)
 ```
 
 ```{r message=FALSE, warning=FALSE}
-ggplot(pca_plot_filtered,aes(x=Dim.1,y=Dim.2,alpha=factor(clasfinal),color=factor(clasfinal),shape = factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)")+theme_ipsum()
+ggplot(pca_plot_filtered,aes(x=Dim.1,y=Dim.2,alpha=factor(clasfinal),color=factor(clasfinal),shape = factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)",color="Clasificación Final dengue",shape="Clasificación Final dengue",alpha="Clasificación Final dengue")+theme_ipsum()
 ```
+### Clustering
+En este punto ya se contaba con todo lo necesario para abarcar la tercera pregunta de investigación propuesta.Esta condujó el analisis estadistico hasta la aplicación de técnicas de aprendizaje de maquina con enfoque no supervisado al no tener algun tipo de clase (la clasificación final se ignora ya que esta no puede abarcar con la generación de perfiles de personas mas especificos).
+#### DBSCAN
+El *density-based spatial clustering of applications with noise* es un algoritmo de aprendizaje no supervisado (esto quiere decir que no necesita etiquetas de clase) que agrupa juntos los puntos que están cerca unos de otros en un espacio de alta densidad, marcando como ruido los puntos que están solos en regiones de baja densidad. El algoritmo DBSCAN tiene dos parámetros principales: `eps` ($\epsilon$) y `minPts` sin requerir indicar explicitamente el número de grupos que se quieren formar.El parametró (*core instance*)
 
-### DBSCAN
+[![DBSCAN](https://ml-explained.com/articles/dbscan-explained/dbscan.gif){width="253"}](https://ml-explained.com/articles/dbscan-explained/dbscan.gif)
+
+Entonces se procedió a aplicar el algoritmo DBSCAN a los datos reducidos por PCA usando las 30 componentes principales ya que estas como se vio anteriormente acumulan el 80% de la varianza de los datos.
 ```{r}
-set.seed(1)
-clusters<-dbscan(pca$ind$coord[,1:10],eps=0.80,minPts=10)
-clusters$cluster
+dbscan::kNNdistplot(pca$ind$coord[,1:30],k=25)
+clusters<-dbscan(pca$ind$coord[,1:30],eps=7.6,minPts=25)
+print(length(clusters$cluster))
+table(clusters$cluster)
 ```
-
+```{r,echo=FALSE}
+knitr::kable(
+  table(clusters$cluster), 
+  caption='DBSCAN usando PCA', 
+  col.names = c("Cluster","# de observaciones")
+)
+```
+En total se obtuvieron seis grupos;1,2,3,4,5 y 6 , ya que 1 representa el ruido o los puntos que no pertenecen a ningun grupo al no cumplir con los parametros de densidad y distancia. Se procedió a realizar un gráfico de las instancias con los grupos que se obtuvieron para cada una.
+```{r,warning=FALSE}
+pca_plot$cluster<-clusters$cluster
+ggplot(pca_plot,aes(x=Dim.1,y=Dim.2,color=factor(cluster),shape=factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)",shape="Clasificación Final",color="Grupos")+theme_ipsum()
+```
+```{r,warning=FALSE}
+pca_plot_filtered<-pca_plot%>%filter(Dim.1>=-20&Dim.1<=20,Dim.2>=-20&Dim.2<=20)
+ggplot(pca_plot_filtered,aes(x=Dim.1,y=Dim.2,color=factor(cluster),shape=factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)",shape="Clasificación Final",color="Grupos")+theme_ipsum()
+```
+```{r}
+silhouette_result1<-silhouette(clusters$cluster,dist(pca$ind$coord[,1:30]))
+summary(silhouette_result1[,3])
+```
+```{r}
+dbscan::kNNdistplot(df_ns,k=10)
+clusters2<-dbscan(df_ns,eps=13,minPts=10)
+```
+```{r}
+knitr::kable(
+  table(clusters2$cluster), 
+  caption='DBSCAN sin ningun método de reducción de dimensionalidad', 
+  col.names = c("Cluster","# de observaciones")
+)
+```
+```{r}
+silhouette_result2<-silhouette(clusters2$cluster,dist(df_ns))
+summary(silhouette_result2[,3])
+```
 
 ## Resultados
 
