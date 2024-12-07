@@ -1,5 +1,5 @@
 ---
-title: 'Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio ..'
+title: 'Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio de perfiles de riesgo y prevención'
 author: "Keyler Sanchez - Greyler Chacon - Samuel Traslaviña "
 date: "2024-11-20"
 output:
@@ -64,6 +64,7 @@ library(factoextra)
 library(hrbrthemes)
 library(dbscan)
 library(cluster)
+library(treemap)
 
 #Establecimiento de una semilla
 set.seed(123)
@@ -263,7 +264,8 @@ table(df_n$clasfinal)
 Caracterizando un poco la población infectada con el virus del dengue en Bucaramanga,se contó el número de casos agrupados por grupo de edad :
 
 ```{r}
-df_n%>%count(clasif_edad,clasfinal)%>%group_by(clasif_edad)%>%mutate(total_contaguiados_edad=sum(n))
+p1<-df_n%>%count(clasif_edad,clasfinal)%>%group_by(clasif_edad)%>%mutate(total_contaguiados_edad=sum(n))
+p1
 ```
 
 la distribución de lo datos es mayoritariamente población masculina , donde para este tipo de población predomino el dengue con signos de alarma , seguido por el dengue sin signos de alarma y por último el dengue grave.La distribución del dengue para el sexo femenino fue similar a la del sexo masculino.Como se muestra a continuación:
@@ -359,7 +361,6 @@ El *density-based spatial clustering of applications with noise* es un algoritmo
 
 Entonces se procedió a aplicar el algoritmo DBSCAN a los datos reducidos por PCA usando las 30 componentes principales ya que estas como se vio anteriormente acumulan el 80% de la varianza de los datos.
 ```{r}
-dbscan::kNNdistplot(pca$ind$coord[,1:30],k=25)
 clusters<-dbscan(pca$ind$coord[,1:30],eps=7.6,minPts=25)
 print(length(clusters$cluster))
 table(clusters$cluster)
@@ -380,13 +381,15 @@ ggplot(pca_plot,aes(x=Dim.1,y=Dim.2,color=factor(cluster),shape=factor(clasfinal
 pca_plot_filtered<-pca_plot%>%filter(Dim.1>=-20&Dim.1<=20,Dim.2>=-20&Dim.2<=20)
 ggplot(pca_plot_filtered,aes(x=Dim.1,y=Dim.2,color=factor(cluster),shape=factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)",shape="Clasificación Final",color="Grupos")+theme_ipsum()
 ```
-Se empleó una metrica para evaluar la calidad de agrupamiento que realizó el algoritmo 
+Se empleó una métrica para evaluar la calidad de agrupamiento que realizó el algoritmo.El *Silhouette score* , mide que tan similar es un punto específico a otros que se encuentran en su mismo grupo y además que tan diferente es dicho punto al resto de grupos. Valores menores que 0 en esta métrica indica que el punto no se encuentra en el grupo correcto y valores cercanos a 1 indican que el punto se encuentra en el grupo correcto y finalmente valores muy cercanos a 0 indican que el punto se está solapando con otros o los grupos que se formaron son muy similares.
 ```{r}
 silhouette_result1<-silhouette(clusters$cluster,dist(pca$ind$coord[,1:30]))
 summary(silhouette_result1[,3])
 ```
+Se obtuvó que la media de la métrica *Silhouette* fue de 0.397 , lo que indica que el algoritmo DBSCAN realizó un buen trabajo aceptable creando 5 grupos y asignando 200 registros como ruido o valores atípicos.
+
+Se realizó un segundo análisis de clustering con el algoritmo DBSCAN pero esta vez sin aplicar el PCA , para ver si los resultados eran similares o no.En este caso ingresando los datos sin reducción de dimensionalidad y con todas sus caracteristicas.
 ```{r}
-dbscan::kNNdistplot(df_ns,k=10)
 clusters2<-dbscan(df_ns,eps=13,minPts=10)
 ```
 ```{r}
@@ -400,6 +403,7 @@ knitr::kable(
 silhouette_result2<-silhouette(clusters2$cluster,dist(df_ns))
 summary(silhouette_result2[,3])
 ```
+La metrica del *Silhouette* en este caso fue de 0.5593 , mostrando mejoría con respecto a la agrupación realizada con los datos reducidos por PCA , pero , cabe destacar que se obtuvieron tan solo 5 grupos donde la tendencia general era que casi todos los puntos deberian pertenecer (aun mas respecto al enfoque usando PCA) al grupo 1 , por lo cual , la metrica obtuvo un mjeor resultado.
 
 ## Resultados
 
@@ -413,20 +417,22 @@ summary(silhouette_result2[,3])
 # }
 ```
 
-Se obtuvo que el dengue con signos de alarma (representado por 1) es el que mayormente presentaron los ciudados infectados por el virus en la ciudad de Bucaramanga , seguido por el dengue sin signos de alarma (representado por 2) y unicamente 26 casos de dengue en su forma grave
-
+Se obtuvo que el dengue con signos de alarma (representado por 1) es el que mayormente presentaron los ciudados infectados por el virus en la ciudad de Bucaramanga , seguido por el dengue sin signos de alarma (representado por 3) y unicamente 26 casos de dengue en su forma grave (representado por 2), como muestra el siguiente diagrama de barras :
+```{r}
+ggplot(df_n,aes(x=clasfinal))+geom_bar(fill=c("red", "green", "blue"))
+```
 El grupo de edad que se contaguio mas con el virus del dengue fue el grupo de edad de 29 a 59 años que contó, seguido por el grupo de edad de 30 a 39 años y el grupo de edad de 18 a 28 años.Se observó lgo interesante , el grupo poblacional de mas de 60 años fue el menos afectado por el virus del dengue.
-
+```{r,echo=FALSE}
+p1$clasif_edad<-recode(p1$clasif_edad,"1"="0 A 6","2"="12 A 17","3"="18 A 28","4"="29 A 59","5"="60 y más","6"="7 A 11")
+treemap(p1,index=c("clasif_edad", "clasfinal"),vSize="n",vColor="total_contaguiados_edad",type = "value",palette="RdYlBu",title="Distribución de contagios por edad y clasificación de dengue",fontsize.title=14)
+```
+El número de casos de dengue en Bucaramanga por años , tambien ha tenido una variación significativa , llegando a un pico en el año 2019 y disminuyendo en los años posteriores,probablemente causado por el confinamiento de la pandemia del covid-19.
 ```{r}
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
 ```
 
 ```{r}
 df['COMUNA shp']
-```
-
-```{python}
-print('hello')
 ```
 
 ## Analisis de resultados y discusión
