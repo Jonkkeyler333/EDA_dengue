@@ -3,14 +3,14 @@ title: 'Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio de p
 author: "Keyler Sanchez - Greyler Chacon - Samuel Traslaviña "
 date: "2024-11-20"
 output:
-  pdf_document:
-    toc: TRUE
   html_document:
     theme: cosmo
     toc: TRUE
     toc_float: TRUE
     df_print: paged
     number_sections: TRUE 
+  pdf_document:
+    toc: TRUE
 lang: es
 bibliography: bibliografia.bib
 ---
@@ -459,13 +459,6 @@ contribs=get_mca_var(mca)$contrib
 orden=order(contribs[,'Dim 1'],decreasing=TRUE)
 ```
 
-```{r,echo=FALSE}
-knitr::kable(
-  contribs[orden,], 
-  caption='Conjunto de datos final a utilizar' 
-)
-```
-
 ```{r}
 datatable(contribs[orden,],options=list(pageLength = 10,lengthMenu = c(10, 25, 50, 100),searchHighlight = TRUE),caption = 'Conjunto de datos final a utilizar')
 ```
@@ -776,8 +769,6 @@ geom_tile(color="white",lwd=1,linetype=1)+theme(axis.text.x=element_text(angle=4
 El tipo de seguridad social en cada grupo en el grupo 1 se trate de personas tanto del regimen subsidiado como del contributivo,del grupo 2 al 5 la tendencia se mantiene , pero , en le grupo 6 se encontró que se trata de personas sin seguridad social.
 
 ```{r,echo=FALSE}
-table(df_n$tip_ss_)
-table(df$tip_ss_)
 p5<-df_n %>%count(grupos,tip_ss_,name = "total")
 p5$tip_ss_<-recode(p5$tip_ss_,"1"="Contributivo","2"="Especial","3"="Excepcion","4"="Indeterminado","5"="No asegurado","6"="Subsidiado")
 p5
@@ -812,10 +803,52 @@ ggplot(p8,aes(x=factor(`COMUNA shp`),y=total,fill=factor(grupos)))+geom_bar(stat
 
 ## Analisis de resultados y discusión
 
-Se obtuvieron 5 grupos de perfiles de personas
+Tras analizar las diferentes distribuciones de dengue grave, es posible llegar a generar un perfil basado en variables demograficas, socieconomicas y clinicas. Al momento de empezar a realizar las distribuciones, se evidenció que ciertas variables aportaban muy poca o directamente no aportaban ningun tipo de información adicional a los perfiles, (como por ejemplo el grupo etnico, debido a que toda la muestra seleccionada poseia la categoria "otros"), dichas variables fueron descartadas en este estudio.
 
--   
+Perfil demográfico
+Se evidenció que este tipo de dengue afectó ligeramente más a los hombres que a las mujeres. Al tener una muestra reducida de solo 26 individuos, podría pensarse que esto es algo normal, y que a medida que se incremente el tamaño de la muestra, las diferencias en esta proporción deberían reducirse. Dado que por el momento no existe ninguna evidencia científica que respalde algún tipo de susceptibilidad a contraer dengue para alguno de los dos sexos en específico, se esperaría que la distribución del dengue para cada sexo se asemeje a la misma estructura poblacional de Bucaramanga, que, según el último reporte realizado por el DANE, correspondería a un 52.54% para las mujeres y un 47.46% para los hombres.
+
+Sin embargo, al analizar la distribución del total de los contagios, se puede apreciar que la proporción de hombres y mujeres que contrajeron la enfermedad sigue inclinada hacia el sexo masculino, lo que podría indicar que existen otros factores asociados a este sexo que los hace ser más susceptibles a contraer la enfermedad.
+
+En cuanto a la edad, se puede apreciar que, en su mayoría, los casos de dengue grave se presentaron en población entre los 29 y 59 años, y mayores a 60. Una conclusión algo errada a la que se podría llegar sería decir que es algo coherente, dado que estos grupos poseen un mayor rango de edad y, por ende, una mayor población. Esto es, en parte, verdad: al tener rangos más amplios de edad, es lógico que más población pueda entrar en estos grupos. Sin embargo, para llegar a una conclusión acertada es necesario tener en cuenta la distribución poblacional de Bucaramanga, que, según el último reporte realizado por el DANE, solo el 15.1% de la población en Bucaramanga es mayor de 60 años.
+
+Teniendo en cuenta que el porcentaje de casos de dengue grave es un 26.92% para población mayor a 60 años, se aprecia que este grupo, a pesar de representar solo el 15.1% de la población, registra un 26.92% de los casos de dengue grave, lo que podría indicar que esta población es más susceptible a contraer dengue grave. Analizando aún más, podemos apreciar que, para los casos de dengue en su totalidad, el porcentaje poblacional de este grupo es mucho menor, lo que refuerza aún más la idea de que, en particular, esta población es vulnerable a presentar dengue grave.
+
+Perfil socioeconómico
+Para el estrato socioeconómico, se encontró que la mayoría de los casos de dengue grave se concentran en el estrato 2, con una diferencia significativa respecto a los demás estratos. Esto podría estar relacionado con factores asociados al nivel socioeconómico, como el acceso limitado a servicios de salud, condiciones de vivienda o mayor exposición a criaderos del mosquito transmisor.
+
+En cuanto a la ocupación, los casos se distribuyen principalmente en los códigos 9997 (actividades del hogar) y 9999 (sin información o no aplica). Las demás categorías ocupacionales presentaron frecuencias mucho menores, lo que podría reflejar un sesgo en los datos disponibles o una relación entre estas actividades y el riesgo de contraer la enfermedad.
+
+Perfil clínico
+En el perfil clínico, se observó que la mayoría de los casos de dengue grave requirieron ingreso a la Unidad de Cuidados Intensivos (UCI), seguidos por hospitalización en piso. Las categorías de observación y “no aplica” presentaron una frecuencia significativamente menor en comparación con las anteriores.
+
+Esto evidencia que el dengue grave genera una alta necesidad de atención médica especializada, lo que sugiere un impacto considerable tanto en el sistema de salud como en el estado clínico de los pacientes afectados.
+
+Análisis de síntomas predominantes según el tipo de dengue
+En el análisis de los síntomas asociados a los diferentes tipos de dengue, se evidenció lo siguiente:
+
+Dengue sin signos de alarma: Los síntomas más frecuentes en esta categoría son fiebre, cefalea, mialgias y artralgias. Estos síntomas están relacionados con el inicio de la infección y son comunes en las formas más leves de la enfermedad.
+
+Dengue con signos de alarma: En este tipo, además de fiebre, cefalea, mialgias y artralgias, aparecen síntomas como dolor abdominal, vómito y caída de plaquetas, que marcan una progresión hacia una enfermedad más severa y representan signos de complicaciones inminentes.
+
+Dengue grave: Los casos graves comparten los síntomas iniciales de fiebre, cefalea, mialgias y artralgias, pero además se caracterizan por la presencia casi exclusiva de manifestaciones severas como hipotensión, extravasación de líquidos, choque y daño orgánico. Estos síntomas reflejan un compromiso sistémico y un mayor riesgo de mortalidad.
+
+En cuanto a la correlación entre los síntomas, los más frecuentes, como fiebre y mialgias (correlación de 0.85), y fiebre y cefalea (correlación de 0.83), presentan una relación significativa. Sin embargo, los síntomas graves como hipotensión, extravasación de líquidos, choque y daño orgánico tienen poca correlación con los demás síntomas. Esto se debe, en parte, a la menor frecuencia de estos casos en el total de la muestra (solo 26 casos de dengue grave). Por ejemplo, algunos síntomas severos, como hemorragias, aparecen con poca frecuencia en el análisis general debido al tamaño limitado de los datos disponibles para este tipo de dengue.
+
+Podemos apreciar que los síntomas severos son indicadores claros del dengue grave y están relacionados con una mayor necesidad de atención médica especializada. Por otro lado, los síntomas comunes en las formas leves y moderadas, como fiebre, cefalea y mialgias, son útiles para un diagnóstico temprano, mientras que los signos de alarma, como dolor abdominal y vómito, son clave para identificar una posible progresión hacia la gravedad.
+
+Por ultimo, analizando el porcentaje de letalidad obtenido (0.0394) concuerda con un reporte presentado en el 2022-2023 por la organizacion panamericana de la salud (OPS), en donde se aprecia que a partir del 2015 (año en el que se registra el primer caso del conjunto de datos analizado), el porcentaje de letalidad varia entre 0.3% y 0.6%.
+
+![Fuente: Organización Panamericana de la Salud, Reporte Fin de Bienio 2022-2023](figures/OPS.jpg){width="720"}
+
+Se obtuvieron 7 grupos de perfiles de personas
+
+- Grupo 0 : Son personas que padecieron de sintomas muy atipicos , generalmente se encuentran en el estrato 2 , se encuentran en el rango de edad de 29 a 59 años y en su mayoria tuvieron que ser tratados en cuidados intensivos y hospitalización.
+- Grupo 1  : Representan la mayoria de casos de dengue en bucaramanga , con sintomas muy comunes como fiebre,cefalea y mialgias , se encuentran en el estrato 2 y 3 , en el rango de edad de 29 a 59 años con un número igual de mujeres y hombres, pertenencen a la zona del centro de la ciudad y occidente.
+- Los grupos 2,3,4 , 5 y 6 : Son grupos que presentan sintomas muy similares , con una distribución de seguridad social en el regimen contributivo y subsidiado , en el estrato 2 y 3 , en el rango de edad de 29 a 59 años y en su mayoria tuvieron que ser tratados en hospitalización en piso y observación.
 
 ## Conlusiones
+
+El dengue es una enfermedad infecciosa que afecta a un gran número de personas en todo el mundo, y su impacto en la salud pública es significativo. En este estudio, se analizaron los perfiles de personas contagiadas con dengue grave en la ciudad de Bucaramanga, Colombia, con el objetivo de identificar factores demográficos, socioeconómicos y clínicos asociados a esta enfermedad.El dengue se basa fundamentalmente en la prevención y el control del vector, el mosquito Aedes aegypti, y en la detección temprana de los casos para evitar complicaciones graves. La identificación de perfiles de riesgo y la comprensión de los factores asociados al dengue grave son fundamentales para mejorar las estrategias de prevención y control de la enfermedad , que se eviten tiempos prolongados de notificación a las autoridades sanitarias y se pueda actuar de manera oportuna para evitar la propagación de la enfermedad.
 
 ## References
