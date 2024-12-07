@@ -439,11 +439,18 @@ ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribuci�
 ```
 
 Finalmente a partir de la aplicación de la técnica no supervisada con el DBSCAN ,se obtienen la siguiente segmentación de personas contagiadas con el virus del dengue en Bucaramanga:
-```{r}
+
+En cuanto al sexo , se encontraron proporciones muy similares en los grupos 1,2,4 y 5 , pero , en el grupo 6 y 3 se encontró una mayor proporción de personas de sexo femenino.El grupo de ruido , 0 , tuvo prácticamente un balance.
+```{r,echo=FALSE}
 ggplot(df_n,aes(x=factor(grupos),fill=factor(sexo_)))+geom_bar(position="fill") +
 labs(title = "Distribución por sexo en cada grupo",x="Grupo",y="Proporción",fill="Sexo") 
 ```
+```{r}
+df_sintomas<-df_n%>%select(grupos,all_of(sintomas))%>%pivot_longer(cols=all_of(sintomas),names_to= "sintoma",values_to="valor")%>%filter(valor==1)%>%group_by(grupos,sintoma)%>%summarise(total=n(),.groups='drop')
 
+ggplot(df_sintomas,aes(x=factor(sintoma),y=factor(grupos),fill=total))+
+geom_tile(color="white",lwd=1,linetype=1)+theme(axis.text.x=element_text(angle=45,hjust=1))+geom_text(aes(label=total),color="white",size=2.5)+guides(fill=guide_colourbar(barwidth=0.5,barheight=10))+theme(panel.grid=element_blank())+labs(title="Distribución de sintomas por grupo",x="Sintomas",y="Grupos",fill="Total Registros")
+```
 
 ## Analisis de resultados y discusión
 
