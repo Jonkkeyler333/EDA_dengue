@@ -727,23 +727,28 @@ El número de casos de dengue en Bucaramanga por años , tambien ha tenido una v
 ```{r,warning=FALSE}
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')+theme_ipsum()
 ```
+
 Observando el comportamiento de la enfermedad por año y semana epidemiológica.
+
 ```{r}
 p3<-df_n%>%group_by(año,semana)%>%summarise(total=n(),.groups='drop')
 ggplot(p3,aes(x=semana,y=total,color=factor(año)))+geom_line()+geom_point()+labs(title='Distribución de los casos de dengue por semana epidemiológica',x='Semana epidemiológica',y='# De casos',color='Año')
 ```
 
 Una caracteristica muy importante que se obtuvo del analisis anterior , es la columna *famantdngu* que indica si la persona contaguiada con dengue tiene familiares que tambien han sido contagiados con el virus.
+
 ```{r}
 p4<-df_n %>%count(famantdngu,clasfinal,name = "total")
 p4$famantdngu<-recode(p4$famantdngu,"1"="Dengue en familiares","2"="No Dengue en familiares","3"="No aplica")
 ggplot(p4,aes(x=factor(famantdngu),y=total,fill=factor(clasfinal)))+geom_bar(stat="identity")+labs(title="Historial de dengue en familia",x="Dengue en familiares",y="Número de contagios",fill="Clasificación final")
 ```
+
 La enfermedad del dengue no es incisivo que se tenga un historial de dengue en su círculo famliar,inclusive, los casos de dengue graves no dependen de si la persona tiene familiares contagiados con el virus.
 
 Finalmente a partir de la aplicación de la técnica no supervisada con el DBSCAN ,se obtienen la siguiente segmentación de personas contagiadas con el virus del dengue en Bucaramanga:
 
 Se observó en primer lugar , las edades por grupo
+
 ```{r,echo=FALSE}
 p6<-df_n%>%count(grupos,clasif_edad)
 p6$clasif_edad<-recode(p6$clasif_edad,"1"="0 A 6","2"="12 A 17","3"="18 A 28","4"="29 A 59","5"="60 y más","6"="7 A 11")
@@ -758,14 +763,18 @@ labs(title = "Distribución por sexo en cada grupo",x="Grupo",y="Proporción",fi
 ```
 
 Luego se revisaron los síntomas por cada grupo. El grupo 0 que corresponde al *ruido* que encontró el algoritmo de agrupamiento , arrojó un grupo muy variado de síntomas , teniendo registros en todas las categorías. El grupo 1 contaba con los síntomas más comunes como fiebre,cefalea y mialgias(dolor muscular). El restante de grupos presentaron sintomatologías muy similares.
+
 ```{r}
 df_sintomas<-df_n%>%select(grupos,all_of(sintomas))%>%pivot_longer(cols=all_of(sintomas),names_to= "sintoma",values_to="valor")%>%filter(valor==1)%>%group_by(grupos,sintoma)%>%summarise(total=n(),.groups='drop')
 ```
+
 ```{r,echo=FALSE}
 ggplot(df_sintomas,aes(x=factor(sintoma),y=factor(grupos),fill=total))+
 geom_tile(color="white",lwd=1,linetype=1)+theme(axis.text.x=element_text(angle=45,hjust=1))+geom_text(aes(label=total),color="white",size=2.5)+guides(fill=guide_colourbar(barwidth=0.5,barheight=10))+theme(panel.grid=element_blank())+labs(title="Distribución de sintomas por grupo",x="Sintomas",y="Grupos",fill="Total Registros")
 ```
+
 El tipo de seguridad social en cada grupo en el grupo 1 se trate de personas tanto del regimen subsidiado como del contributivo,del grupo 2 al 5 la tendencia se mantiene , pero , en le grupo 6 se encontró que se trata de personas sin seguridad social.
+
 ```{r,echo=FALSE}
 table(df_n$tip_ss_)
 table(df$tip_ss_)
@@ -776,10 +785,13 @@ ggplot(p5,aes(x=factor(tip_ss_),y=total,fill=total))+geom_bar(stat="identity")+f
 ```
 
 La conducto medica que recibio cada grupo de personas , arrojó que el grupo 6 de los *outliers* confirmoque este grupo en realidad trata personas que tuvieron dengue grave , asi en la mayoria de registros no pertenecieran a esta categoria ya que tuvieron la mayoría en la conducta de cuidados intensivos.El grupo 1 tuvo mayormente conducta ambulatoria y hospitalización en piso , el 2 en estado de observación , 3 en hospitalización y observacion , 4 en cuidados intensivos y 5 en hospitalización en piso , cuidados intensivos y observación y el 6 en hostipaización en piso.
+
 ```{r,echo=FALSE}
 ggplot(df_n,aes(x=factor(conducta),fill=factor(grupos)))+geom_bar(position="fill")+labs(title="Distribución de conducta por grupo",x="Conducta",y="Proporción",fill="Grupo")
 ```
+
 La estratificación socioeconómica de cada grupo arrojó que el grupo 6 , los *outliers* , se trataba de personas del estrato 2 , el grupo 1 de estrato 3 , el 2 de estrato 2 , el 3 de estrato 3 , el 4 de estrato 2 y el 5 de estrato 3.
+
 ```{r,echo=FALSE}
 p7 <- df_n %>%
   count(grupos, estrato_, name = "total") %>%
@@ -790,16 +802,19 @@ p7$estrato_<-recode(p7$estrato_,"1"="Estrato 1","2"="Estrato 2","3"="Estrato 3",
 treemap(p7,index=c("grupos","estrato_"),vSize="total",vColor="total_grupo",type = "value",palette="RdYlBu",title="Distribución de estrato socioeconómico por grupo",fontsize.title=12)
 ```
 
-
 Finalmente detallando en que zonas se repartian cada grupo
+
 ```{r,echo=FALSE}
 df$grupos<-clusters$cluster
 p8<-df%>%count(grupos,`COMUNA shp`,name="total")
 ggplot(p8,aes(x=factor(`COMUNA shp`),y=total,fill=factor(grupos)))+geom_bar(stat="identity")+labs(title="Distribución de grupos por comuna",x="Comuna",y="Número de contagios",fill="Grupo")+theme(axis.text.x=element_text(angle=45,hjust=1))
 ```
 
-
 ## Analisis de resultados y discusión
+
+Se obtuvieron 5 grupos de perfiles de personas
+
+-   
 
 ## Conlusiones
 
