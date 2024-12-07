@@ -3,14 +3,14 @@ title: 'Proyecto Final Estadistica E1 : El dengue en Bucaramanga un estudio de p
 author: "Keyler Sanchez - Greyler Chacon - Samuel Traslaviña "
 date: "2024-11-20"
 output:
+  pdf_document:
+    toc: TRUE
   html_document:
     theme: cosmo
     toc: TRUE
     toc_float: TRUE
     df_print: paged
     number_sections: TRUE 
-  pdf_document:
-    toc: TRUE
 lang: es
 bibliography: bibliografia.bib
 ---
@@ -743,6 +743,13 @@ La enfermedad del dengue no es incisivo que se tenga un historial de dengue en s
 
 Finalmente a partir de la aplicación de la técnica no supervisada con el DBSCAN ,se obtienen la siguiente segmentación de personas contagiadas con el virus del dengue en Bucaramanga:
 
+Se observó en primer lugar , las edades por grupo
+```{r,echo=FALSE}
+p6<-df_n%>%count(grupos,clasif_edad)
+p6$clasif_edad<-recode(p6$clasif_edad,"1"="0 A 6","2"="12 A 17","3"="18 A 28","4"="29 A 59","5"="60 y más","6"="7 A 11")
+ggplot(p6,aes(x=factor(clasif_edad),y=n,fill=factor(grupos)))+geom_bar(stat="identity")+labs(title="Distribución de grupos por edad",x="Edad",y="Número de contagios",fill="Grupo")
+```
+
 En cuanto al sexo , se encontraron proporciones muy similares en los grupos 1,2,4 y 5 , pero , en el grupo 6 y 3 se encontró una mayor proporción de personas de sexo femenino.El grupo de ruido , 0 , tuvo prácticamente un balance.
 
 ```{r,echo=FALSE}
@@ -757,6 +764,40 @@ df_sintomas<-df_n%>%select(grupos,all_of(sintomas))%>%pivot_longer(cols=all_of(s
 ```{r,echo=FALSE}
 ggplot(df_sintomas,aes(x=factor(sintoma),y=factor(grupos),fill=total))+
 geom_tile(color="white",lwd=1,linetype=1)+theme(axis.text.x=element_text(angle=45,hjust=1))+geom_text(aes(label=total),color="white",size=2.5)+guides(fill=guide_colourbar(barwidth=0.5,barheight=10))+theme(panel.grid=element_blank())+labs(title="Distribución de sintomas por grupo",x="Sintomas",y="Grupos",fill="Total Registros")
+```
+El tipo de seguridad social en cada grupo en el grupo 1 se trate de personas tanto del regimen subsidiado como del contributivo,del grupo 2 al 5 la tendencia se mantiene , pero , en le grupo 6 se encontró que se trata de personas sin seguridad social.
+```{r,echo=FALSE}
+table(df_n$tip_ss_)
+table(df$tip_ss_)
+p5<-df_n %>%count(grupos,tip_ss_,name = "total")
+p5$tip_ss_<-recode(p5$tip_ss_,"1"="Contributivo","2"="Especial","3"="Excepcion","4"="Indeterminado","5"="No asegurado","6"="Subsidiado")
+p5
+ggplot(p5,aes(x=factor(tip_ss_),y=total,fill=total))+geom_bar(stat="identity")+facet_wrap(~grupos)+labs(title="Distribución de seguridad social por grupo",x="Seguridad social",y="Número de contagios")+theme(axis.text.x=element_text(angle=45,hjust=1))
+```
+
+La conducto medica que recibio cada grupo de personas , arrojó que el grupo 6 de los *outliers* confirmoque este grupo en realidad trata personas que tuvieron dengue grave , asi en la mayoria de registros no pertenecieran a esta categoria ya que tuvieron la mayoría en la conducta de cuidados intensivos.El grupo 1 tuvo mayormente conducta ambulatoria y hospitalización en piso , el 2 en estado de observación , 3 en hospitalización y observacion , 4 en cuidados intensivos y 5 en hospitalización en piso , cuidados intensivos y observación y el 6 en hostipaización en piso.
+```{r,echo=FALSE}
+ggplot(df_n,aes(x=factor(conducta),fill=factor(grupos)))+geom_bar(position="fill")+labs(title="Distribución de conducta por grupo",x="Conducta",y="Proporción",fill="Grupo")
+```
+La estratificación socioeconómica de cada grupo arrojó que el grupo 6 , los *outliers* , se trataba de personas del estrato 2 , el grupo 1 de estrato 3 , el 2 de estrato 2 , el 3 de estrato 3 , el 4 de estrato 2 y el 5 de estrato 3.
+```{r}
+p7<-df_n %>%count(grupos,estrato_,name = "total")
+p7 <- df_n %>%
+  count(grupos, estrato_, name = "total") %>%
+  group_by(grupos) %>%
+  mutate(total_grupo = sum(total)) %>%
+  ungroup()
+
+treemap(p7,index=c("grupos","estrato_"),vSize="total",vColor="total_grupo",type = "value",palette="RdYlBu",title="Distribución de estrato socioeconómico por grupo",fontsize.title=14)
+
+treemap(p1,index=c("clasif_edad", "clasfinal"),vSize="n",vColor="total_contaguiados_edad",type = "value",palette="RdYlBu",title="Distribución de contagios por edad y clasificación de dengue",fontsize.title=14)
+
+```
+
+
+Finalmente detallando en que zonas se repartian cada grupo
+```{r}
+
 ```
 
 
