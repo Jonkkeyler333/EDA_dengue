@@ -65,6 +65,8 @@ library(hrbrthemes)
 library(dbscan)
 library(cluster)
 library(treemap)
+library(corrplot) #Para la matriz de correlación
+library(DT) #Para hacer tablas dinamicas
 
 #Establecimiento de una semilla
 set.seed(123)
@@ -161,8 +163,8 @@ print(head(df[c('fec_not','fec_con_','fec_hos_','fec_def_','ini_sin_')]))
 ```
 
 ```{r}
-categorical_data=c('clasif_edad','sexo_','tip_ss_','per_etn_','estrato_','gp_gestan','gp_mad_com','tip_cas_','famantdngu','COMUNA shp','gp_migrant','gp_discapa','fiebre','cefalea','diarrea','tip_cas_','conducta','clasfinal')
-sintomas=c('fiebre','cefalea','dolrretroo','malgias','artralgia','erupcionr','dolor_abdo','vomito','diarrea','somnolenci','hepatomeg','hem_mucosa','hipotermia','aum_hemato','caida_plaq','acum_liqui','extravasac','hemorr_hem','choque','daño_organ')
+categorical_data=c('clasif_edad','sexo_','tip_ss_','per_etn_','estrato_','gp_gestan','gp_mad_com','tip_cas_','famantdngu','COMUNA shp','gp_migrant','gp_discapa','fiebre','tip_cas_','conducta','clasfinal')
+sintomas=c('fiebre','cefalea','dolrretroo','malgias','artralgia','erupcionr','dolor_abdo','vomito','diarrea','somnolenci','hepatomeg','hem_mucosa','hipotermia','aum_hemato','cefalea','diarrea','caida_plaq','acum_liqui','extravasac','hemorr_hem','choque','daño_organ')
 ```
 
 ### Limpieza de datos
@@ -275,6 +277,170 @@ p2<-df_n%>%count(sexo_,clasfinal)%>%group_by(sexo_)%>%mutate(total_contaguiados_
 p2
 ```
 
+---MODIFICACIÓN---
+Posterior a eso, se realizó un analisis mas segmentado con el objetivo de comprender el comportamiento de los casos de dengue grave registrados, e identificar factores asociados a su desenlace clínico (fallecimiennto o supervivencia), todo esto para poder encontrar patrones en las características de los pacientes, la prevalencia de síntomas y las diferencias entre los grupos de fallecidos y sobrevivientes.
+
+Inicialmente se seleccionó exclusivamente los casos de dengue grave, ademas se incluyó una variable binaria _fallecido_ para diferenciar los casos en función a su desenlace clínico.
+
+```{r}
+# Filtrar casos de dengue grave
+dengue_grave <- subset(df, clasfinal == "DENGUE GRAVE")
+
+# Crear variable binaria:
+# fallecido = 1 (si t_defuncion > 0),
+# 0 en caso contrario
+dengue_grave$fallecido <- ifelse(dengue_grave$t_defuncion > 0, 1, 0)
+
+tabla_distribucion <- dengue_grave %>%
+  mutate(desenlace = ifelse(fallecido == 1, "Falleció", "Sobrevivió")) %>% # 
+  count(desenlace) %>% # Contar casos para cada desenlace
+  mutate(porcentaje = (n / sum(n)) * 100) # Calcular porcentaje
+
+# Mostrar tabla
+tabla_distribucion
+```
+
+Afortunadamente solo se identificaron 26 casos de dengue grave de los cuales ninguno resultó en fallecimiento. Esto era de esperarse, debido a que el dengue es una enfermedad con una baja tasa de letalidad, a partir de esto se estimó la tasa de letalidad dividiendo el número total de casos fallecidos entre el número total de casos notificados:
+
+```{r}
+# Calcular el total de casos
+total_casos <- nrow(df)
+
+# Calcular el total de fallecidos (t_fallecido > 0)
+total_fallecidos <- sum(df$t_defuncion > 0, na.rm = TRUE)
+
+# Calcular el porcentaje de letalidad
+letalidad <- (total_fallecidos / total_casos) * 100
+
+print(paste("Tasa de letalidad:", round(letalidad, 4),"%"))
+```
+
+Dado que no se reportaron fallecimientos entre los casos de dengue grave, el estudio se centró exclusivamente en los 26 casos que sobrevivieron. Se exploró perfil sociodemográfico y clínico de estos pacientes.
+Para ello se analizó la distribución de los casos para diferentes variables socioeconomicas, demograficas y clinicas con el fin de hallar algun tipo de patrón.
+
+**Distribución demografica**
+```{r}
+#Ordena por edad
+dengue_grave$clasif_edad <- factor(dengue_grave$clasif_edad, 
+                                   levels = c("0 A 6", "7  A 11", "12 A 17", "18 A 28", "29 A 59", "60 Y MAS"))
+
+# Distribución por grupo etario
+tabla_grupos_edad <- dengue_grave %>%
+  group_by(clasif_edad) %>% 
+  summarise(n = n()) %>%    
+  mutate(porcentaje = (n / sum(n)) * 100) %>%
+  arrange(clasif_edad) 
+
+# Mostrar tabla
+tabla_grupos_edad
+
+# Distribución por sexo
+tabla_sexo <- dengue_grave %>%
+  group_by(sexo_) %>%  
+  summarise(n = n()) %>% 
+  mutate(porcentaje = (n / sum(n)) * 100) %>% 
+  arrange(sexo_)
+
+tabla_sexo
+```
+**Distribución socioeconomica**
+```{r}
+# Distribución de estrato
+tabla_estrato <- dengue_grave %>%
+  group_by(estrato_) %>%
+  summarise(n = n()) %>%
+  mutate(porcentaje = (n / sum(n)) * 100) %>%
+  arrange(estrato_)
+
+tabla_estrato
+
+# Distribucion de ocupación
+tabla_ocupacion <- dengue_grave %>%
+  group_by(ocupacion_) %>%
+  summarise(n = n()) %>%
+  mutate(porcentaje = (n / sum(n)) * 100) %>%
+  arrange(ocupacion_)
+
+tabla_ocupacion
+```
+**Distribución clinica**
+```{r}
+# Distribución por conducta
+tabla_conducta <- dengue_grave %>%
+  group_by(conducta) %>%
+  summarise(n = n()) %>%
+  mutate(porcentaje = (n / sum(n)) * 100) %>%
+  arrange(conducta)
+
+tabla_conducta
+```
+Luego, para determinar la predominancia de los sintomas dentro de cada grupo de dengue, se crearón 2 sub-sets adicionales para las 2 clasificaciones restantes (dengue con alarma y sin alarma)
+
+```{r}
+# Filtrar los datos por cada tipo de dengue
+dengue_sin_alarma <- subset(df, clasfinal == "DENGUE SIN SIGNOS DE ALARMA")
+dengue_con_alarma <- subset(df, clasfinal == "DENGUE CON SIGNOS DE ALARMA")
+
+# La distribución ya se detallo anteriormente
+# table(df$clasfinal)
+
+```
+
+Para cada tipo de dengue se calculó el porcentaje de ocurrencia de cada síntoma. Esto para poder observar cómo varían los síntomas entre los grupos y analizar los patrones más característicos de cada uno.
+
+```{r}
+# Lista de columnas de síntomas
+#sintomas <- c("fiebre",	"cefalea",	"dolrretroo",	"malgias",	"artralgia",	"erupcionr", 
+#              "dolor_abdo",	"vomito",	"diarrea", "somnolenci",	"hipotensio",	
+#              "hepatomeg", "hem_mucosa",	"hipotermia",	"aum_hemato",	"caida_plaq",	
+#              "acum_liqui",	"extravasac",	"hemorr_hem", "choque", "daño_organ")
+
+# Función para calcular el porcentaje de casos con determinado síntoma
+frecuencia_sintomas <- function(df, sintomas) {
+  (colSums(df[, sintomas] == 1, na.rm = TRUE) / nrow(df)) * 100
+}
+
+# Frecuencias por tipo de dengue
+frecuencia_sin_alarma <- frecuencia_sintomas(dengue_sin_alarma, sintomas)
+frecuencia_con_alarma <- frecuencia_sintomas(dengue_con_alarma, sintomas)
+frecuencia_grave <- frecuencia_sintomas(dengue_grave, sintomas)
+
+# Combinar los resultados en un solo data frame
+frecuencias <- data.frame(
+  Sintoma = sintomas,
+  Sin_Alarma = frecuencia_sin_alarma,
+  Con_Alarma = frecuencia_con_alarma,
+  Grave = frecuencia_grave
+)
+
+# Mostrar los resultados
+datatable(frecuencias, 
+          options = list(pageLength = 10,  # Muestra 10 filas por página
+                         lengthMenu = c(10, 25, 50, 100),  # Opciones para la longitud de página
+                         searchHighlight = TRUE),  # Resalta las coincidencias en la búsqueda
+          caption = 'Frecuencia de Síntomas por Tipo de Dengue')
+```
+
+---(no se si podria entrar en analisis de correspondencia:)---
+Finalmente, se analizó la relación entre los síntomas mediante una matriz de correlación. Este análisis permitió identificar grupos de síntomas que podrían estar relacionados entre sí.
+
+```{r}
+# Calcular la matriz de correlación entre los síntomas
+correlacion_sintomas <- cor(df_n[, sintomas], method = "pearson", use = "complete.obs")
+
+# Transformar la matriz de correlación a un formato largo para tabla
+correlacion_tabla <- reshape2::melt(correlacion_sintomas, varnames = c("Sintoma1", "Sintoma2"), value.name = "Correlacion")
+
+# Mostrar la tabla interactiva con paginación de 22 registros por página 
+#(22 para que cada pagina sea un sintoma y todas sus correlaciones)
+datatable(correlacion_tabla, 
+          options = list(pageLength = 22, 
+                         lengthMenu = c(10, 25, 50, 100), 
+                         searchHighlight = TRUE), 
+          caption = "Matriz de correlaciones entre síntomas")
+```
+
+
 #### Analisis de correspondecia (*correspondence analysis*)
 
 El conjunto de datos esta conformado mayoritariamente por variables categoricas , entonces , se eligió el analisis de correspondencia para poder obtener información mas precisa y relevante de los datos , como entender relaciones que puedan existir entre las caracteristicas. Se define el análisis de la correspondencia como una metodología estadística utilizada para identificar y visualizar los patrones ocultos y las asociaciones entre variables categóricas en datos multivariados donde las variables tienen categorías discretas en lugar de valores numéricos[@MCA].En el caso del estudio estadistico que se llevó acabo , esta tecnica resulto muy util ya que es ampliamente usada con datos que son originados a partir de cuestionarios. El proceso matematico del analisis de correspondencia múltiple que es realmente el metodo que se aplicó al tener varias *features*, se basa en la descomposición de la matriz de contingencia en valores singulares y la proyección de los datos en un espacio de menor dimensión , el proceso matematico riguroso se obvio un poco por su complejidad. Se usó la función `MCA` del paquete de R `FactoMineR` para realizar el análisis de correspondencia múltiple.
@@ -301,6 +467,15 @@ knitr::kable(
   contribs[orden,], 
   caption='Conjunto de datos final a utilizar' 
 )
+```
+
+---POSIBLE MODIFICACION, ESA LIBRERIA DEJA HACER TABLAS MAS DINAMICAS PARA CUANDO TOQUE PRESENTAR UN LISTADO DE DATOS MAS O MENOS EXTENSO---
+```{r}
+datatable(contribs[orden,], 
+          options = list(pageLength = 10,  # Esto es para las  filas por página
+                         lengthMenu = c(10, 25, 50, 100),  # Esto es para las opciones que salen en "show entries"
+                         searchHighlight = TRUE),  
+          caption = 'Conjunto de datos final a utilizar')
 ```
 
 Al observar los resultados de contribución , las características *clasfinal* , *conducta* y *fiebre* son las que mas contribuyen al primer componente principal , mientras que las características también de sintomatología fueron más contribuyente a la segunda componente. Esto demuestra que estas variables tienen una gran importancia e influencia en el conjunto de datos , describiendo y representando cada registro por ellas. El siguiente gráfico presenta las coordenadas o distancias calculadas a partir del al valor de las correlaciones cuadráticas entre las variables y las dimensiones.
@@ -433,6 +608,135 @@ En cuanto a la distribución de los casos de dengue por sexo , se observó que e
 p2$sexo_<-recode(p2$sexo_,"1"="Femenino","2"="Masculino")
 ggplot(p2,aes(x=factor(sexo_),y=n,fill=factor(clasfinal)))+geom_bar(stat="identity",)+labs(title="Distribución de casos por sexo y clasificación final de dengue",x="Sexo",y="Número de contagios",fill="Clasificación final")
 ```
+
+--MODIFICACION--
+Para los casos concretos de dengue grave se obtuvo lo siguiente:
+Para los casos de dengue grave, también se observa en la distribución por sexo una mayor frecuencia de casos en hombres (M) en comparación con las mujeres (F). Y que la mayoría se concentrarón en adultos de 29 años o más.
+```{r}
+# Visualización: gráfico de barras para el sexo
+ggplot(dengue_grave, aes(x = sexo_)) +
+  geom_bar(fill = "tomato") +
+  theme_minimal() +
+  labs(title = "Distribución por sexo",
+       x = "Sexo", y = "Frecuencia")
+
+# Visualización: histograma para la edad
+ggplot(dengue_grave, aes(x = clasif_edad)) +
+  geom_bar(fill = "steelblue") +
+  theme_minimal() +
+  labs(title = "Distribución por clasificación de edad",
+       x = "Clasificación de edad", y = "Frecuencia")
+```
+
+Para el estrato socioeconómico se obtuvo que la mayoría de los casos de dengue grave se concentran en el estrato 2, y con bastante diferencia respecto a las demas. En cuanto a la ocupación, los casos se distribuyen principalmente en los códigos 9997 y 9999, con frecuencias menores en las demás categorías ocupacionales.
+```{r}
+# Visualización: gráfica de barras para ocupación
+ggplot(dengue_grave, aes(x = as.factor(ocupacion_))) +
+  geom_bar(fill = "orange") +
+  theme_minimal() +
+  labs(title = "Distribución por ocupación", x = "Ocupación", y = "Frecuencia")
+
+# Visualización: gráfica de barras
+ggplot(dengue_grave, aes(x = as.factor(estrato_))) +
+  geom_bar(fill = "purple") +
+  theme_minimal() +
+  labs(title = "Distribución por estrato socioeconómico",
+       x = "Estrato", y = "Frecuencia")
+```
+
+La distribución de los datos muestra que la mayoría de los casos de dengue grave llevaron a la unidad de cuidados intensivos, seguidos por hospitalización en piso. Las categorías de observación y "no aplica" tienen una frecuencia muy baja en comparación.
+```{r}
+# Visualización: gráfico de barras para la variable 'conducta'
+ggplot(dengue_grave, aes(x = conducta)) +
+  geom_bar(fill = "darkblue") +
+  theme_minimal() +
+  labs(title = "Distribución por conducta", x = "Conducta", y = "Frecuencia")
+```
+
+Para facilitar la comparación entre los grupos de dengue, se realizó un gráfico de barras que muestra la prevalencia de cada síntoma por tipo de dengue.
+Se puede apreciar que síntomas como fiebre, cefalea, mialgias y artralgias son los más frecuentes en el dengue sin alarma y grave, mientras que otros como dolor abdominal, caída de plaquetas y vómito son más comunes en el dengue grave y con alarma. Además, síntomas severos como hipotensión, extravasación de líquidos, choque y daño orgánico se presentan casi exclusivamente en el dengue grave.
+
+```{r}
+# Convertir los datos a formato largo para graficar
+frecuencias_largo <- reshape2::melt(frecuencias, id.vars = "Sintoma", 
+                          variable.name = "Tipo_Dengue", 
+                          value.name = "Frecuencia")
+
+# Crear el gráfico
+ggplot(frecuencias_largo, aes(x = Sintoma, y = Frecuencia, fill = Tipo_Dengue)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_minimal() +
+  labs(title = "Frecuencia de Síntomas por Tipo de Dengue",
+       x = "Síntoma", y = "Frecuencia (%)") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+En cuanto a la correlación que presentan los sintomas entre sí, se puede apreciar que los que tienen mayor correlación (>0.8) son _fiebre_ y _malgias_ (0.85), _fiebre_ y _cefalea_ (0.83). Por otro lado, los sintomas mas graves como hipotensión, extravasación de líquidos, choque y daño orgánico casi no presentan correlación con los demas sintomas.
+(en el analsis voy explicar q tambien es por la cantidad de datos de cada tipo de dengue, como solo son 26 graves, casi no hay sintomas como hemorragias y así en general, por eso sale valores tan pequeños)
+
+```{r}
+# Graficar la matriz de correlación
+par(cex = 0.2)
+corrplot(correlacion_sintomas, 
+         method = "color", 
+         col = colorRampPalette(c("blue", "white", "red"))(200), 
+         type = "upper",
+         cl.cex = 4,
+         tl.cex = 3,  
+         tl.col = "black", 
+         addCoef.col = "black",  
+         number.cex = 2,  
+         tl.srt = 45,  
+         mar = c(6, 6, 6, 6)) 
+```
+
+```{r}
+# Filtrar las correlaciones según los rangos
+cor_high_08 <- which(correlacion_sintomas > 0.8, arr.ind = TRUE)
+cor_high_05 <- which(correlacion_sintomas > 0.5 & correlacion_sintomas <= 0.8, arr.ind = TRUE)
+cor_high_02 <- which(correlacion_sintomas > 0.2 & correlacion_sintomas <= 0.5, arr.ind = TRUE)
+
+# Función para eliminar correlaciones duplicadas
+eliminar_duplicados <- function(cor_high) {
+  # Filtrar las correlaciones donde los índices de las filas y columnas son diferentes
+  cor_high <- cor_high[cor_high[, 1] < cor_high[, 2], ]
+  
+  # Crear una tabla con los síntomas y sus correlaciones
+  correlaciones_unicas <- data.frame(
+    Sintoma1 = rownames(correlacion_sintomas)[cor_high[, 1]],
+    Sintoma2 = colnames(correlacion_sintomas)[cor_high[, 2]],
+    Correlacion = correlacion_sintomas[cor_high]
+  )
+  
+  # Filtrar las correlaciones iguales a 1
+  correlaciones_unicas <- correlaciones_unicas[correlaciones_unicas$Correlacion < 1, ]
+  
+  return(correlaciones_unicas)
+}
+
+# Función para ordenar las correlaciones por valor descendente
+ordenar_por_correlacion <- function(correlaciones) {
+  correlaciones[order(-correlaciones$Correlacion), ]
+}
+
+# Aplicar la función para filtrar correlaciones únicas
+cor_high_08_table <- eliminar_duplicados(cor_high_08)
+cor_high_05_table <- eliminar_duplicados(cor_high_05)
+cor_high_02_table <- eliminar_duplicados(cor_high_02)
+
+# Aplicar la función de ordenación
+cor_high_08_table <- ordenar_por_correlacion(cor_high_08_table)
+cor_high_05_table <- ordenar_por_correlacion(cor_high_05_table)
+cor_high_02_table <- ordenar_por_correlacion(cor_high_02_table)
+
+# Mostrar tablas con knitr::kable
+knitr::kable(cor_high_08_table, caption = "Correlaciones mayores a 0.8", format = "markdown")
+knitr::kable(cor_high_05_table, caption = "Correlaciones entre 0.5 y 0.8", format = "markdown")
+knitr::kable(cor_high_02_table, caption = "Correlaciones entre 0.2 y 0.5", format = "markdown")
+
+```
+
 El número de casos de dengue en Bucaramanga por años , tambien ha tenido una variación significativa , llegando a un pico en el año 2019 y disminuyendo en los años posteriores,probablemente causado por el confinamiento de la pandemia del covid-19.
 ```{r}
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
@@ -443,8 +747,6 @@ Finalmente a partir de la aplicación de la técnica no supervisada con el DBSCA
 ggplot(df_n,aes(x=factor(grupos),fill=factor(sexo_)))+geom_bar(position="fill") +
 labs(title = "Distribución por sexo en cada grupo",x="Grupo",y="Proporción",fill="Sexo") 
 ```
-
-
 ## Analisis de resultados y discusión
 
 ## Conlusiones
