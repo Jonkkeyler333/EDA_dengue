@@ -271,7 +271,8 @@ p1
 la distribución de lo datos es mayoritariamente población masculina , donde para este tipo de población predomino el dengue con signos de alarma , seguido por el dengue sin signos de alarma y por último el dengue grave.La distribución del dengue para el sexo femenino fue similar a la del sexo masculino.Como se muestra a continuación:
 
 ```{r}
-df_n%>%count(sexo_,clasfinal)%>%group_by(sexo_)%>%mutate(total_contaguiados_sexo=sum(n))
+p2<-df_n%>%count(sexo_,clasfinal)%>%group_by(sexo_)%>%mutate(total_contaguiados_sexo=sum(n))
+p2
 ```
 
 #### Analisis de correspondecia (*correspondence analysis*)
@@ -425,6 +426,11 @@ El grupo de edad que se contaguio mas con el virus del dengue fue el grupo de ed
 ```{r,echo=FALSE}
 p1$clasif_edad<-recode(p1$clasif_edad,"1"="0 A 6","2"="12 A 17","3"="18 A 28","4"="29 A 59","5"="60 y más","6"="7 A 11")
 treemap(p1,index=c("clasif_edad", "clasfinal"),vSize="n",vColor="total_contaguiados_edad",type = "value",palette="RdYlBu",title="Distribución de contagios por edad y clasificación de dengue",fontsize.title=14)
+```
+En cuanto a la distribución de los casos de dengue por sexo , se observó que el sexo masculino fue el que mayormente presentó contagios por el virus del dengue en la ciudad de Bucaramanga,ademas, para ambos sexos , tanto masculino como femenino , el dengue con signos de alarma fue el que mayormente presentaron los ciudadanos.
+```{r}
+p2$sexo_<-recode(p2$sexo_,"1"="Femenino","2"="Masculino")
+ggplot(p2,aes(x=factor(sexo_),y=n,fill=factor(clasfinal)))+geom_bar(stat="identity",)+labs(title="Distribución de casos por sexo y clasificación final de dengue",x="Sexo",y="Número de contagios",fill="Clasificación final")
 ```
 El número de casos de dengue en Bucaramanga por años , tambien ha tenido una variación significativa , llegando a un pico en el año 2019 y disminuyendo en los años posteriores,probablemente causado por el confinamiento de la pandemia del covid-19.
 ```{r}
