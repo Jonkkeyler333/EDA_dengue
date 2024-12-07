@@ -780,24 +780,22 @@ La conducto medica que recibio cada grupo de personas , arrojó que el grupo 6 d
 ggplot(df_n,aes(x=factor(conducta),fill=factor(grupos)))+geom_bar(position="fill")+labs(title="Distribución de conducta por grupo",x="Conducta",y="Proporción",fill="Grupo")
 ```
 La estratificación socioeconómica de cada grupo arrojó que el grupo 6 , los *outliers* , se trataba de personas del estrato 2 , el grupo 1 de estrato 3 , el 2 de estrato 2 , el 3 de estrato 3 , el 4 de estrato 2 y el 5 de estrato 3.
-```{r}
-p7<-df_n %>%count(grupos,estrato_,name = "total")
+```{r,echo=FALSE}
 p7 <- df_n %>%
   count(grupos, estrato_, name = "total") %>%
   group_by(grupos) %>%
   mutate(total_grupo = sum(total)) %>%
   ungroup()
-
-treemap(p7,index=c("grupos","estrato_"),vSize="total",vColor="total_grupo",type = "value",palette="RdYlBu",title="Distribución de estrato socioeconómico por grupo",fontsize.title=14)
-
-treemap(p1,index=c("clasif_edad", "clasfinal"),vSize="n",vColor="total_contaguiados_edad",type = "value",palette="RdYlBu",title="Distribución de contagios por edad y clasificación de dengue",fontsize.title=14)
-
+p7$estrato_<-recode(p7$estrato_,"1"="Estrato 1","2"="Estrato 2","3"="Estrato 3","4"="Estrato 4","5"="Estrato 5","6"="Estrato 6")
+treemap(p7,index=c("grupos","estrato_"),vSize="total",vColor="total_grupo",type = "value",palette="RdYlBu",title="Distribución de estrato socioeconómico por grupo",fontsize.title=12)
 ```
 
 
 Finalmente detallando en que zonas se repartian cada grupo
-```{r}
-
+```{r,echo=FALSE}
+df$grupos<-clusters$cluster
+p8<-df%>%count(grupos,`COMUNA shp`,name="total")
+ggplot(p8,aes(x=factor(`COMUNA shp`),y=total,fill=factor(grupos)))+geom_bar(stat="identity")+labs(title="Distribución de grupos por comuna",x="Comuna",y="Número de contagios",fill="Grupo")+theme(axis.text.x=element_text(angle=45,hjust=1))
 ```
 
 
