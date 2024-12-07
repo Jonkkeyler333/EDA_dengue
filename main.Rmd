@@ -249,6 +249,7 @@ Una muestra del resultado de la transformación
 ggplot(data=df_ns,aes(x=t_notificacion))+geom_histogram(fill='blue',bins=39)+labs(title='Distribución de la caracteristica t_notificacion',x='t_notificacion',y='count')+theme_ipsum()
 ```
 
+
 ### Análisis exploratorio de datos (*EDA*)
 
 El análisis exploratorio de datos o *EDA* , es una técnica crucial en cualquier proyecto que involucre datos,*EDA* trata de analizar características clave, descubrir patrones e identificar relaciones entre variables o *features* del conjunto de datos,estudian y exploraran conjuntos de registros para comprender sus rasgos predominantes, descubrir patrones, localizar valores atípicos e identificar relaciones entre variables. Se empezó con enfoques basicos como agrupaciones o conteos de los datos para tener una idea de la distribución de los mismos.
@@ -379,6 +380,7 @@ ggplot(pca_plot,aes(x=Dim.1,y=Dim.2,color=factor(cluster),shape=factor(clasfinal
 pca_plot_filtered<-pca_plot%>%filter(Dim.1>=-20&Dim.1<=20,Dim.2>=-20&Dim.2<=20)
 ggplot(pca_plot_filtered,aes(x=Dim.1,y=Dim.2,color=factor(cluster),shape=factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)",shape="Clasificación Final",color="Grupos")+theme_ipsum()
 ```
+Se empleó una metrica para evaluar la calidad de agrupamiento que realizó el algoritmo 
 ```{r}
 silhouette_result1<-silhouette(clusters$cluster,dist(pca$ind$coord[,1:30]))
 summary(silhouette_result1[,3])
