@@ -363,7 +363,7 @@ El *density-based spatial clustering of applications with noise* es un algoritmo
 Entonces se procedió a aplicar el algoritmo DBSCAN a los datos reducidos por PCA usando las 30 componentes principales ya que estas como se vio anteriormente acumulan el 80% de la varianza de los datos.
 ```{r}
 clusters<-dbscan(pca$ind$coord[,1:30],eps=7.6,minPts=25)
-print(length(clusters$cluster))
+df_n$grupos<-clusters$cluster
 table(clusters$cluster)
 ```
 ```{r,echo=FALSE}
@@ -408,6 +408,7 @@ La metrica del *Silhouette* en este caso fue de 0.5593 , mostrando mejoría con 
 
 ## Resultados
 
+En primera instancia se analizaron distribuciones de algunas caracteristicas poblacionales :
 ```{r}
 # for (var in categorical_data) {
 #   df_counts <- df %>%
@@ -437,9 +438,12 @@ El número de casos de dengue en Bucaramanga por años , tambien ha tenido una v
 ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
 ```
 
+Finalmente a partir de la aplicación de la técnica no supervisada con el DBSCAN ,se obtienen la siguiente segmentación de personas contagiadas con el virus del dengue en Bucaramanga:
 ```{r}
-df['COMUNA shp']
+ggplot(df_n,aes(x=factor(grupos),fill=factor(sexo_)))+geom_bar(position="fill") +
+labs(title = "Distribución por sexo en cada grupo",x="Grupo",y="Proporción",fill="Sexo") 
 ```
+
 
 ## Analisis de resultados y discusión
 
