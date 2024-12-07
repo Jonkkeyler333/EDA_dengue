@@ -96,10 +96,7 @@ data<-read_csv('data/data_dengue.csv',show_col_types=FALSE)
 ```
 
 ```{r,echo=FALSE}
-knitr::kable(
-  head(data), 
-  caption = "Datos extraídos y procesados en un dataframe de R"
-)
+datatable(head(data),options=list(pageLength = 10,lengthMenu = c(10, 25, 50, 100),searchHighlight = TRUE),caption='Datos extraídos y procesados en un dataframe de R')
 ```
 
 Es necesario realizar la aclaración que cada registro corresponde a un caso positivo de dengue de una persona en la ciudad de bucaramanga con datos hasta el 12 de diciembre de 2023.
@@ -127,7 +124,6 @@ Se obtuvo que la caracteristica llamada *ocupacion* , esta columna representa el
 
 ```{r}
 data<-data %>% replace_na(list(ocupacion_=1))
-#print(sort(colSums(is.na(data)),decreasing=TRUE))
 ```
 
 ```{r,echo=FALSE}
@@ -144,7 +140,7 @@ Es necesario revisar los tipos de datos de cada columna para asegurarse que sean
 ```{r,echo=FALSE}
 knitr::kable(
   sapply(data,typeof), 
-  caption = "Tipos de datos en el conjunto de datos"
+  caption = "Tipos de datos en el conjunto de datos "
 )
 ```
 
@@ -252,7 +248,6 @@ Una muestra del resultado de la transformación
 ggplot(data=df_ns,aes(x=t_notificacion))+geom_histogram(fill='blue',bins=39)+labs(title='Distribución de la caracteristica t_notificacion',x='t_notificacion',y='count')+theme_ipsum()
 ```
 
-
 ### Análisis exploratorio de datos (*EDA*)
 
 El análisis exploratorio de datos o *EDA* , es una técnica crucial en cualquier proyecto que involucre datos,*EDA* trata de analizar características clave, descubrir patrones e identificar relaciones entre variables o *features* del conjunto de datos,estudian y exploraran conjuntos de registros para comprender sus rasgos predominantes, descubrir patrones, localizar valores atípicos e identificar relaciones entre variables. Se empezó con enfoques basicos como agrupaciones o conteos de los datos para tener una idea de la distribución de los mismos.
@@ -277,10 +272,9 @@ p2<-df_n%>%count(sexo_,clasfinal)%>%group_by(sexo_)%>%mutate(total_contaguiados_
 p2
 ```
 
----MODIFICACIÓN---
-Posterior a eso, se realizó un analisis mas segmentado con el objetivo de comprender el comportamiento de los casos de dengue grave registrados, e identificar factores asociados a su desenlace clínico (fallecimiennto o supervivencia), todo esto para poder encontrar patrones en las características de los pacientes, la prevalencia de síntomas y las diferencias entre los grupos de fallecidos y sobrevivientes.
+---MODIFICACIÓN--- Posterior a eso, se realizó un analisis mas segmentado con el objetivo de comprender el comportamiento de los casos de dengue grave registrados, e identificar factores asociados a su desenlace clínico (fallecimiennto o supervivencia), todo esto para poder encontrar patrones en las características de los pacientes, la prevalencia de síntomas y las diferencias entre los grupos de fallecidos y sobrevivientes.
 
-Inicialmente se seleccionó exclusivamente los casos de dengue grave, ademas se incluyó una variable binaria _fallecido_ para diferenciar los casos en función a su desenlace clínico.
+Inicialmente se seleccionó exclusivamente los casos de dengue grave, ademas se incluyó una variable binaria *fallecido* para diferenciar los casos en función a su desenlace clínico.
 
 ```{r}
 # Filtrar casos de dengue grave
@@ -315,10 +309,10 @@ letalidad <- (total_fallecidos / total_casos) * 100
 print(paste("Tasa de letalidad:", round(letalidad, 4),"%"))
 ```
 
-Dado que no se reportaron fallecimientos entre los casos de dengue grave, el estudio se centró exclusivamente en los 26 casos que sobrevivieron. Se exploró perfil sociodemográfico y clínico de estos pacientes.
-Para ello se analizó la distribución de los casos para diferentes variables socioeconomicas, demograficas y clinicas con el fin de hallar algun tipo de patrón.
+Dado que no se reportaron fallecimientos entre los casos de dengue grave, el estudio se centró exclusivamente en los 26 casos que sobrevivieron. Se exploró perfil sociodemográfico y clínico de estos pacientes. Para ello se analizó la distribución de los casos para diferentes variables socioeconomicas, demograficas y clinicas con el fin de hallar algun tipo de patrón.
 
 **Distribución demografica**
+
 ```{r}
 #Ordena por edad
 dengue_grave$clasif_edad <- factor(dengue_grave$clasif_edad, 
@@ -343,7 +337,9 @@ tabla_sexo <- dengue_grave %>%
 
 tabla_sexo
 ```
+
 **Distribución socioeconomica**
+
 ```{r}
 # Distribución de estrato
 tabla_estrato <- dengue_grave %>%
@@ -363,7 +359,9 @@ tabla_ocupacion <- dengue_grave %>%
 
 tabla_ocupacion
 ```
+
 **Distribución clinica**
+
 ```{r}
 # Distribución por conducta
 tabla_conducta <- dengue_grave %>%
@@ -374,6 +372,7 @@ tabla_conducta <- dengue_grave %>%
 
 tabla_conducta
 ```
+
 Luego, para determinar la predominancia de los sintomas dentro de cada grupo de dengue, se crearón 2 sub-sets adicionales para las 2 clasificaciones restantes (dengue con alarma y sin alarma)
 
 ```{r}
@@ -421,8 +420,7 @@ datatable(frecuencias,
           caption = 'Frecuencia de Síntomas por Tipo de Dengue')
 ```
 
----(no se si podria entrar en analisis de correspondencia:)---
-Finalmente, se analizó la relación entre los síntomas mediante una matriz de correlación. Este análisis permitió identificar grupos de síntomas que podrían estar relacionados entre sí.
+---(no se si podria entrar en analisis de correspondencia:)--- Finalmente, se analizó la relación entre los síntomas mediante una matriz de correlación. Este análisis permitió identificar grupos de síntomas que podrían estar relacionados entre sí.
 
 ```{r}
 # Calcular la matriz de correlación entre los síntomas
@@ -439,7 +437,6 @@ datatable(correlacion_tabla,
                          searchHighlight = TRUE), 
           caption = "Matriz de correlaciones entre síntomas")
 ```
-
 
 #### Analisis de correspondecia (*correspondence analysis*)
 
@@ -469,13 +466,8 @@ knitr::kable(
 )
 ```
 
----POSIBLE MODIFICACION, ESA LIBRERIA DEJA HACER TABLAS MAS DINAMICAS PARA CUANDO TOQUE PRESENTAR UN LISTADO DE DATOS MAS O MENOS EXTENSO---
 ```{r}
-datatable(contribs[orden,], 
-          options = list(pageLength = 10,  # Esto es para las  filas por página
-                         lengthMenu = c(10, 25, 50, 100),  # Esto es para las opciones que salen en "show entries"
-                         searchHighlight = TRUE),  
-          caption = 'Conjunto de datos final a utilizar')
+datatable(contribs[orden,],options=list(pageLength = 10,lengthMenu = c(10, 25, 50, 100),searchHighlight = TRUE),caption = 'Conjunto de datos final a utilizar')
 ```
 
 Al observar los resultados de contribución , las características *clasfinal* , *conducta* y *fiebre* son las que mas contribuyen al primer componente principal , mientras que las características también de sintomatología fueron más contribuyente a la segunda componente. Esto demuestra que estas variables tienen una gran importancia e influencia en el conjunto de datos , describiendo y representando cada registro por ellas. El siguiente gráfico presenta las coordenadas o distancias calculadas a partir del al valor de las correlaciones cuadráticas entre las variables y las dimensiones.
@@ -528,19 +520,25 @@ pca_plot_filtered<-pca_plot%>%filter(Dim.1>=-20&Dim.1<=20,Dim.2>=-20&Dim.2<=20)
 ```{r message=FALSE, warning=FALSE}
 ggplot(pca_plot_filtered,aes(x=Dim.1,y=Dim.2,alpha=factor(clasfinal),color=factor(clasfinal),shape = factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)",color="Clasificación Final dengue",shape="Clasificación Final dengue",alpha="Clasificación Final dengue")+theme_ipsum()
 ```
+
 ### Clustering
+
 En este punto ya se contaba con todo lo necesario para abarcar la tercera pregunta de investigación propuesta.Esta condujó el analisis estadistico hasta la aplicación de técnicas de aprendizaje de maquina con enfoque no supervisado al no tener algun tipo de clase (la clasificación final se ignora ya que esta no puede abarcar con la generación de perfiles de personas mas especificos).
+
 #### DBSCAN
+
 El *density-based spatial clustering of applications with noise* es un algoritmo de aprendizaje no supervisado (esto quiere decir que no necesita etiquetas de clase) que agrupa juntos los puntos que están cerca unos de otros en un espacio de alta densidad, marcando como ruido los puntos que están solos en regiones de baja densidad. El algoritmo DBSCAN tiene dos parámetros principales: `eps` ($\epsilon$) y `minPts` sin requerir indicar explicitamente el número de grupos que se quieren formar.El parametró (*core instance*)
 
 [![DBSCAN](https://ml-explained.com/articles/dbscan-explained/dbscan.gif){width="253"}](https://ml-explained.com/articles/dbscan-explained/dbscan.gif)
 
 Entonces se procedió a aplicar el algoritmo DBSCAN a los datos reducidos por PCA usando las 30 componentes principales ya que estas como se vio anteriormente acumulan el 80% de la varianza de los datos.
+
 ```{r}
 clusters<-dbscan(pca$ind$coord[,1:30],eps=7.6,minPts=25)
 df_n$grupos<-clusters$cluster
 table(clusters$cluster)
 ```
+
 ```{r,echo=FALSE}
 knitr::kable(
   table(clusters$cluster), 
@@ -548,26 +546,34 @@ knitr::kable(
   col.names = c("Cluster","# de observaciones")
 )
 ```
+
 En total se obtuvieron seis grupos;1,2,3,4,5 y 6 , ya que 1 representa el ruido o los puntos que no pertenecen a ningun grupo al no cumplir con los parametros de densidad y distancia. Se procedió a realizar un gráfico de las instancias con los grupos que se obtuvieron para cada una.
+
 ```{r,warning=FALSE}
 pca_plot$cluster<-clusters$cluster
 ggplot(pca_plot,aes(x=Dim.1,y=Dim.2,color=factor(cluster),shape=factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)",shape="Clasificación Final",color="Grupos")+theme_ipsum()
 ```
+
 ```{r,warning=FALSE}
 pca_plot_filtered<-pca_plot%>%filter(Dim.1>=-20&Dim.1<=20,Dim.2>=-20&Dim.2<=20)
 ggplot(pca_plot_filtered,aes(x=Dim.1,y=Dim.2,color=factor(cluster),shape=factor(clasfinal)))+geom_point(size=4)+labs(title="Pacientes de Dengue en Bucaramanga",x="Componente Principal 1 (11.80%)",y="Componente Principal 2 (10.59%)",shape="Clasificación Final",color="Grupos")+theme_ipsum()
 ```
+
 Se empleó una métrica para evaluar la calidad de agrupamiento que realizó el algoritmo.El *Silhouette score* , mide que tan similar es un punto específico a otros que se encuentran en su mismo grupo y además que tan diferente es dicho punto al resto de grupos. Valores menores que 0 en esta métrica indica que el punto no se encuentra en el grupo correcto y valores cercanos a 1 indican que el punto se encuentra en el grupo correcto y finalmente valores muy cercanos a 0 indican que el punto se está solapando con otros o los grupos que se formaron son muy similares.
+
 ```{r}
 silhouette_result1<-silhouette(clusters$cluster,dist(pca$ind$coord[,1:30]))
 summary(silhouette_result1[,3])
 ```
+
 Se obtuvó que la media de la métrica *Silhouette* fue de 0.397 , lo que indica que el algoritmo DBSCAN realizó un buen trabajo aceptable creando 5 grupos y asignando 200 registros como ruido o valores atípicos.
 
 Se realizó un segundo análisis de clustering con el algoritmo DBSCAN pero esta vez sin aplicar el PCA , para ver si los resultados eran similares o no.En este caso ingresando los datos sin reducción de dimensionalidad y con todas sus caracteristicas.
+
 ```{r}
 clusters2<-dbscan(df_ns,eps=13,minPts=10)
 ```
+
 ```{r}
 knitr::kable(
   table(clusters2$cluster), 
@@ -575,60 +581,40 @@ knitr::kable(
   col.names = c("Cluster","# de observaciones")
 )
 ```
+
 ```{r}
 silhouette_result2<-silhouette(clusters2$cluster,dist(df_ns))
 summary(silhouette_result2[,3])
 ```
+
 La metrica del *Silhouette* en este caso fue de 0.5593 , mostrando mejoría con respecto a la agrupación realizada con los datos reducidos por PCA , pero , cabe destacar que se obtuvieron tan solo 5 grupos donde la tendencia general era que casi todos los puntos deberian pertenecer (aun mas respecto al enfoque usando PCA) al grupo 1 , por lo cual , la metrica obtuvo un mjeor resultado.
 
 ## Resultados
 
 En primera instancia se analizaron distribuciones de algunas caracteristicas poblacionales :
-```{r}
-# for (var in categorical_data) {
-#   df_counts <- df %>%
-#     group_by(!!sym(var))%>%summarise(count=n(),.groups="drop")
-#   p<-ggplot(df_counts,aes(x=!!sym(var),y=count,fill=!!sym(var))) +
-#     geom_bar(stat="identity")+labs(title=paste("Distribución de la caracteristica",var),x=var,y="Frecuencia")+theme(axis.text.x = element_text(angle = 45, hjust = 1),legend.position = "none")
-#   print(p)
-# }
-```
 
 Se obtuvo que el dengue con signos de alarma (representado por 1) es el que mayormente presentaron los ciudados infectados por el virus en la ciudad de Bucaramanga , seguido por el dengue sin signos de alarma (representado por 3) y unicamente 26 casos de dengue en su forma grave (representado por 2), como muestra el siguiente diagrama de barras :
+
 ```{r}
 ggplot(df_n,aes(x=clasfinal))+geom_bar(fill=c("red", "green", "blue"))
 ```
+
 El grupo de edad que se contaguio mas con el virus del dengue fue el grupo de edad de 29 a 59 años que contó, seguido por el grupo de edad de 30 a 39 años y el grupo de edad de 18 a 28 años.Se observó lgo interesante , el grupo poblacional de mas de 60 años fue el menos afectado por el virus del dengue.
+
 ```{r,echo=FALSE}
 p1$clasif_edad<-recode(p1$clasif_edad,"1"="0 A 6","2"="12 A 17","3"="18 A 28","4"="29 A 59","5"="60 y más","6"="7 A 11")
 treemap(p1,index=c("clasif_edad", "clasfinal"),vSize="n",vColor="total_contaguiados_edad",type = "value",palette="RdYlBu",title="Distribución de contagios por edad y clasificación de dengue",fontsize.title=14)
 ```
+
 En cuanto a la distribución de los casos de dengue por sexo , se observó que el sexo masculino fue el que mayormente presentó contagios por el virus del dengue en la ciudad de Bucaramanga,ademas, para ambos sexos , tanto masculino como femenino , el dengue con signos de alarma fue el que mayormente presentaron los ciudadanos.
-```{r}
+
+```{r,echo=FALSE}
 p2$sexo_<-recode(p2$sexo_,"1"="Femenino","2"="Masculino")
 ggplot(p2,aes(x=factor(sexo_),y=n,fill=factor(clasfinal)))+geom_bar(stat="identity",)+labs(title="Distribución de casos por sexo y clasificación final de dengue",x="Sexo",y="Número de contagios",fill="Clasificación final")
 ```
 
---MODIFICACION--
-Para los casos concretos de dengue grave se obtuvo lo siguiente:
-Para los casos de dengue grave, también se observa en la distribución por sexo una mayor frecuencia de casos en hombres (M) en comparación con las mujeres (F). Y que la mayoría se concentrarón en adultos de 29 años o más.
-```{r}
-# Visualización: gráfico de barras para el sexo
-ggplot(dengue_grave, aes(x = sexo_)) +
-  geom_bar(fill = "tomato") +
-  theme_minimal() +
-  labs(title = "Distribución por sexo",
-       x = "Sexo", y = "Frecuencia")
-
-# Visualización: histograma para la edad
-ggplot(dengue_grave, aes(x = clasif_edad)) +
-  geom_bar(fill = "steelblue") +
-  theme_minimal() +
-  labs(title = "Distribución por clasificación de edad",
-       x = "Clasificación de edad", y = "Frecuencia")
-```
-
 Para el estrato socioeconómico se obtuvo que la mayoría de los casos de dengue grave se concentran en el estrato 2, y con bastante diferencia respecto a las demas. En cuanto a la ocupación, los casos se distribuyen principalmente en los códigos 9997 y 9999, con frecuencias menores en las demás categorías ocupacionales.
+
 ```{r}
 # Visualización: gráfica de barras para ocupación
 ggplot(dengue_grave, aes(x = as.factor(ocupacion_))) +
@@ -645,6 +631,7 @@ ggplot(dengue_grave, aes(x = as.factor(estrato_))) +
 ```
 
 La distribución de los datos muestra que la mayoría de los casos de dengue grave llevaron a la unidad de cuidados intensivos, seguidos por hospitalización en piso. Las categorías de observación y "no aplica" tienen una frecuencia muy baja en comparación.
+
 ```{r}
 # Visualización: gráfico de barras para la variable 'conducta'
 ggplot(dengue_grave, aes(x = conducta)) +
@@ -653,8 +640,7 @@ ggplot(dengue_grave, aes(x = conducta)) +
   labs(title = "Distribución por conducta", x = "Conducta", y = "Frecuencia")
 ```
 
-Para facilitar la comparación entre los grupos de dengue, se realizó un gráfico de barras que muestra la prevalencia de cada síntoma por tipo de dengue.
-Se puede apreciar que síntomas como fiebre, cefalea, mialgias y artralgias son los más frecuentes en el dengue sin alarma y grave, mientras que otros como dolor abdominal, caída de plaquetas y vómito son más comunes en el dengue grave y con alarma. Además, síntomas severos como hipotensión, extravasación de líquidos, choque y daño orgánico se presentan casi exclusivamente en el dengue grave.
+Para facilitar la comparación entre los grupos de dengue, se realizó un gráfico de barras que muestra la prevalencia de cada síntoma por tipo de dengue. Se puede apreciar que síntomas como fiebre, cefalea, mialgias y artralgias son los más frecuentes en el dengue sin alarma y grave, mientras que otros como dolor abdominal, caída de plaquetas y vómito son más comunes en el dengue grave y con alarma. Además, síntomas severos como hipotensión, extravasación de líquidos, choque y daño orgánico se presentan casi exclusivamente en el dengue grave.
 
 ```{r}
 # Convertir los datos a formato largo para graficar
@@ -672,8 +658,7 @@ ggplot(frecuencias_largo, aes(x = Sintoma, y = Frecuencia, fill = Tipo_Dengue)) 
 
 ```
 
-En cuanto a la correlación que presentan los sintomas entre sí, se puede apreciar que los que tienen mayor correlación (>0.8) son _fiebre_ y _malgias_ (0.85), _fiebre_ y _cefalea_ (0.83). Por otro lado, los sintomas mas graves como hipotensión, extravasación de líquidos, choque y daño orgánico casi no presentan correlación con los demas sintomas.
-(en el analsis voy explicar q tambien es por la cantidad de datos de cada tipo de dengue, como solo son 26 graves, casi no hay sintomas como hemorragias y así en general, por eso sale valores tan pequeños)
+En cuanto a la correlación que presentan los sintomas entre sí, se puede apreciar que los que tienen mayor correlación (\>0.8) son *fiebre* y *malgias* (0.85), *fiebre* y *cefalea* (0.83). Por otro lado, los sintomas mas graves como hipotensión, extravasación de líquidos, choque y daño orgánico casi no presentan correlación con los demas sintomas. (en el analsis voy explicar q tambien es por la cantidad de datos de cada tipo de dengue, como solo son 26 graves, casi no hay sintomas como hemorragias y así en general, por eso sale valores tan pequeños)
 
 ```{r}
 # Graficar la matriz de correlación
@@ -738,27 +723,43 @@ knitr::kable(cor_high_02_table, caption = "Correlaciones entre 0.2 y 0.5", forma
 ```
 
 El número de casos de dengue en Bucaramanga por años , tambien ha tenido una variación significativa , llegando a un pico en el año 2019 y disminuyendo en los años posteriores,probablemente causado por el confinamiento de la pandemia del covid-19.
-```{r}
-ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')
+
+```{r,warning=FALSE}
+ggplot(data=df,aes(x=factor(año)))+geom_bar(fill="red")+labs(title='Distribución de los casos de dengue por año',x='año',y='frecuencia')+theme_ipsum()
 ```
+Observando el comportamiento de la enfermedad por año y semana epidemiológica.
+```{r}
+p3<-df_n%>%group_by(año,semana)%>%summarise(total=n(),.groups='drop')
+ggplot(p3,aes(x=semana,y=total,color=factor(año)))+geom_line()+geom_point()+labs(title='Distribución de los casos de dengue por semana epidemiológica',x='Semana epidemiológica',y='# De casos',color='Año')
+```
+
+Una caracteristica muy importante que se obtuvo del analisis anterior , es la columna *famantdngu* que indica si la persona contaguiada con dengue tiene familiares que tambien han sido contagiados con el virus.
+```{r}
+p4<-df_n %>%count(famantdngu,clasfinal,name = "total")
+p4$famantdngu<-recode(p4$famantdngu,"1"="Dengue en familiares","2"="No Dengue en familiares","3"="No aplica")
+ggplot(p4,aes(x=factor(famantdngu),y=total,fill=factor(clasfinal)))+geom_bar(stat="identity")+labs(title="Historial de dengue en familia",x="Dengue en familiares",y="Número de contagios",fill="Clasificación final")
+```
+La enfermedad del dengue no es incisivo que se tenga un historial de dengue en su círculo famliar,inclusive, los casos de dengue graves no dependen de si la persona tiene familiares contagiados con el virus.
 
 Finalmente a partir de la aplicación de la técnica no supervisada con el DBSCAN ,se obtienen la siguiente segmentación de personas contagiadas con el virus del dengue en Bucaramanga:
 
 En cuanto al sexo , se encontraron proporciones muy similares en los grupos 1,2,4 y 5 , pero , en el grupo 6 y 3 se encontró una mayor proporción de personas de sexo femenino.El grupo de ruido , 0 , tuvo prácticamente un balance.
+
 ```{r,echo=FALSE}
 ggplot(df_n,aes(x=factor(grupos),fill=factor(sexo_)))+geom_bar(position="fill") +
 labs(title = "Distribución por sexo en cada grupo",x="Grupo",y="Proporción",fill="Sexo") 
 ```
-<<<<<<< HEAD
+
+Luego se revisaron los síntomas por cada grupo. El grupo 0 que corresponde al *ruido* que encontró el algoritmo de agrupamiento , arrojó un grupo muy variado de síntomas , teniendo registros en todas las categorías. El grupo 1 contaba con los síntomas más comunes como fiebre,cefalea y mialgias(dolor muscular). El restante de grupos presentaron sintomatologías muy similares.
 ```{r}
 df_sintomas<-df_n%>%select(grupos,all_of(sintomas))%>%pivot_longer(cols=all_of(sintomas),names_to= "sintoma",values_to="valor")%>%filter(valor==1)%>%group_by(grupos,sintoma)%>%summarise(total=n(),.groups='drop')
-
+```
+```{r,echo=FALSE}
 ggplot(df_sintomas,aes(x=factor(sintoma),y=factor(grupos),fill=total))+
 geom_tile(color="white",lwd=1,linetype=1)+theme(axis.text.x=element_text(angle=45,hjust=1))+geom_text(aes(label=total),color="white",size=2.5)+guides(fill=guide_colourbar(barwidth=0.5,barheight=10))+theme(panel.grid=element_blank())+labs(title="Distribución de sintomas por grupo",x="Sintomas",y="Grupos",fill="Total Registros")
 ```
 
-=======
->>>>>>> f40e38467a79f3166063958e5cae100137f461d0
+
 ## Analisis de resultados y discusión
 
 ## Conlusiones
